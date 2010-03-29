@@ -6,7 +6,7 @@ point modifying it here. */
 #ifndef incl_RexNetworking_RexProtocolMsgIDs_h
 #define incl_RexNetworking_RexProtocolMsgIDs_h
 
-#include "LLMessageManager/LLMessage.h"
+#include "LLMessage.h"
 
 const RexNetworking::LLMsgID RexNetMsgStartPingCheck                           = 0x1;
 const RexNetworking::LLMsgID RexNetMsgCompletePingCheck                        = 0x2;

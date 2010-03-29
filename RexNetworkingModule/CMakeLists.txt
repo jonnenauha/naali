@@ -15,11 +15,12 @@ init_target (RexNetworkingModule OUTPUT modules/core)
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
-file (GLOB MOC_FILES LLInputStream.h LLOutputStream.h)
-set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
+file (GLOB MOC_FILES LLSession.h LLInputStream.h LLOutputStream.h Capabilities.h XmlRpc.h)
 
 AddSourceFolder (LLMessageManager)
 #AddSourceFolder (LLInventory)
+
+set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 # Qt4 Wrap
 QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
@@ -30,11 +31,11 @@ add_definitions (-DUSE_QT)
 
 use_package (BOOST)
 use_package (QT4)
-use_modules (Core Foundation Interfaces RexCommon HttpUtilities RpcUtilities RexNetworkingModule)
+use_modules (Core Foundation Interfaces RexCommon HttpUtilities RpcUtilities)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} )
 
-link_modules (Core Foundation Interfaces RexCommon HttpUtilities RpcUtilities)
+link_modules (Core Foundation Interfaces RexCommon HttpUtilities RpcUtilities) 
 link_package (BOOST)
 link_package (QT4)
 

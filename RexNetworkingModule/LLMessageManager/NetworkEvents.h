@@ -5,7 +5,7 @@
 
 #include "EventDataInterface.h"
 #include "RexUUID.h"
-#include "LLMessageManager/LLMessage.h"
+#include "LLMessage.h"
 
 #include <boost/smart_ptr.hpp>
 #include <boost/shared_ptr.hpp>
@@ -43,21 +43,6 @@ namespace RexNetworking
          */
         static const event_id_t EVENT_NETWORKING_REGISTERED = 0x04;
     }
-
-    /// Event data interface for authentication type identification.
-    /// \ingroup OpenSimProtocolClient
-    class AuthenticationEventData : public Foundation::EventDataInterface
-    {
-    public:
-        AuthenticationEventData(const AuthenticationType &auth_type, const std::string &identity_url = "", const std::string &host_Url = "") 
-            : type(auth_type), identityUrl(identity_url), hostUrl(host_Url) {}
-        virtual ~AuthenticationEventData() {}
-        void SetIdentity(const std::string &url) { identityUrl = url; }
-        void SetHost(const std::string &url) { hostUrl = url; }
-        AuthenticationType type;
-        std::string identityUrl;
-        std::string hostUrl;
-    };
 
     /// Event data interface for inbound messages.
     /// \ingroup OpenSimProtocolClient

@@ -4,8 +4,8 @@
 #include "DebugOperatorNew.h"
 
 #include "LLOutputStream.h"
+#include "LLMessageManager/RexProtocolMsgIDs.h"
 
-#include "RexProtocolMsgIDs.h"
 #include "QuatUtils.h"
 #include "ConversionUtils.h"
 

@@ -9,6 +9,7 @@
 #include "ForwardDefines.h"
 #include "NetworkEvents.h"
 #include "Quaternion.h"
+#include "SessionManager.h"
 
 #include <boost/smart_ptr.hpp>
 #include <boost/function.hpp>
@@ -332,6 +333,8 @@ namespace RexLogic
 
         //! MainPanel handler
         MainPanelHandler *main_panel_handler_;
+
+        Foundation::SessionInterface *session_;
     };
 }
 

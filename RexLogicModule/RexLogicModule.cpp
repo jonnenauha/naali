@@ -13,6 +13,8 @@
 #include "Avatar/AvatarControllable.h"
 #include "CameraControllable.h"
 
+#include "LLSession.h"
+
 #include "EventHandlers/NetworkEventHandler.h"
 #include "EventHandlers/NetworkStateEventHandler.h"
 #include "EventHandlers/InputEventHandler.h"
@@ -251,6 +253,10 @@ void RexLogicModule::PostInitialize()
         "Adds/removes EC_Highlight for every prim and mesh. Usage: highlight(add|remove)."
         "If add is called and EC already exists for entity, EC's visibility is toggled.",
         Console::Bind(this, &RexLogicModule::ConsoleHighlightTest)));
+
+    Foundation::SessionManager sessionmgr;
+    sessionmgr.Register (new RexNetworking::LLSessionHandler, "OpenSim/LLUDP");
+    session_ = sessionmgr.Login (QVariantMap ());
 }
 
 void RexLogicModule::SubscribeToNetworkEvents(boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> currentProtocolModule)
@@ -409,6 +415,12 @@ void RexLogicModule::Update(f64 frametime)
             // Update overlays last, after camera update
             UpdateAvatarOverlays();
         }
+
+        std::cout << "!! Session: is ";
+        if (session_-> IsConnected())
+            std::cout << "connected" << std::endl;
+        else
+            std::cout << "not connected" << std::endl;
     }
 
     RESETPROFILER;

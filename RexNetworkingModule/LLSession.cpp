@@ -18,7 +18,103 @@ namespace RexNetworking
 {
     using Foundation::LoginParameters;
     using Foundation::SessionInterface;
+    
+    //=========================================================================
+    // pretty printers
+    
+    void variant_print (const QVariant &v, const QString &p);
+    void variant_print (const QVariantMap &m, const QString &p);
+    void variant_print (const QVariantList &l, const QString &p);
+    void variant_print (const QStringList &l, const QString &p);
+    void variant_print (const QString &s, const QString &p);
+    void variant_print (bool v, const QString &p);
+    void variant_print (int v, const QString &p);
 
+    void variant_print (const QVariant &v, const QString &p)
+    {
+        QString pre (p + " ");
+        switch (v.type())
+        {
+            case QVariant::Bool:
+                variant_print (v.toBool(), pre);
+                break;
+
+            case QVariant::List:
+                variant_print (v.toList(), pre);
+                break;
+
+            case QVariant::StringList:
+                variant_print (v.toStringList(), pre);
+                break;
+
+            case QVariant::Map:
+                variant_print (v.toMap(), pre);
+                break;
+
+            case QVariant::String:
+                variant_print (v.toString(), pre);
+                break;
+
+            case QVariant::Int:
+                variant_print (v.toInt(), pre);
+                break;
+
+            default:
+                std::cout << "no handler for type: " << v.type() << std::endl;
+        }
+    }
+
+    void variant_print (const QVariantMap &m, const QString &p)
+    {
+        QString pre (p + " ");
+        foreach (QString s, m.keys())
+        {
+            std::cout << qPrintable (pre) << "(M)" << qPrintable (s) << ": ";
+            variant_print (m[s], pre);
+            std::cout << "\n";
+        }
+    }
+
+    void variant_print (const QVariantList &l, const QString &p)
+    {
+        QString pre (p + " ");
+        foreach (QVariant v, l)
+        {
+            std::cout << qPrintable (pre) << "(L)";
+            variant_print (v, pre);
+            std::cout << "\n";
+        }
+    }
+
+    void variant_print (const QStringList &l, const QString &p)
+    {
+        QString pre (p + " ");
+        foreach (QString s, l)
+        {
+            std::cout << qPrintable (pre) << "(L)";
+            variant_print (s, pre);
+            std::cout << "\n";
+        }
+    }
+
+    void variant_print (const QString &s, const QString &p)
+    {
+        QString pre (p + " ");
+        std::cout << qPrintable (pre) << "(S) " << qPrintable (s);
+    }
+
+    void variant_print (bool v, const QString &p)
+    {
+        QString pre (p + " ");
+        std::cout << qPrintable (pre) << "(B) " << v;
+    }
+
+    void variant_print (int v, const QString &p)
+    {
+        QString pre (p + " ");
+        std::cout << qPrintable (pre) << "(I) " << v;
+    }
+ 
     //=========================================================================
     // parsers for LLLogin
 
@@ -248,6 +344,19 @@ namespace RexNetworking
             std::cout << "seed caps error: " << caps_-> reply-> error() << std::endl;
 
         delete caps_; caps_ = 0;
+    }
+
+    //=========================================================================
+    // Logout object for LLSession
+
+    LLLogout::LLLogout (LLSession *sesson) :
+        session_ (0)
+    {
+    }
+
+    bool LLLogout::operator() ()
+    {
+        return true;
     }
 
     //=========================================================================

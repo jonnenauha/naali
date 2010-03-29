@@ -375,7 +375,7 @@ namespace RexNetworking
         {
             connection = boost::shared_ptr<NetworkConnection>(new NetworkConnection(serverAddress, port));
             return true;
-        } catch(Poco::LL::LLException &e)
+        } catch(Poco::Net::NetException &e)
         {
             std::cout << "Failed to connect to " << serverAddress << ":" << port << ". Error: " << e.message() << std::endl;
             return false;

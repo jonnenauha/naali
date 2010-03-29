@@ -28,6 +28,8 @@ namespace RexNetworking
         /// The message manager starts in a disconnected state.
         /// @param The filename to take the message definitions from.
         LLMessageManager(const char *messageListFilename);
+
+        /// Destructor
         ~LLMessageManager();
 
         /// Connects to the given server.
