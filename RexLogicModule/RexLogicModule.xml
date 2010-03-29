@@ -3,6 +3,7 @@
     <dependency>ProtocolModuleOpenSim</dependency>
     <dependency>ProtocolModuleTaiga</dependency>
     <dependency>OgreRenderingModule</dependency>
+    <dependency>RexNetworking</dependency>
     <dependency>UiModule</dependency>
     <dependency>EnvironmentModule</dependency>
 </config>

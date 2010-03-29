@@ -18,6 +18,8 @@ template <class T> inline bool _isnan(T f) { return f != f; }
 #endif 
 
 #include <boost/shared_ptr.hpp>
+#include <string>
+#include <map>
 #include <vector>
 #include <list>
 

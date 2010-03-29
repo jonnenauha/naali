@@ -1,0 +1,91 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
+#include "SessionManager.h"
+
+namespace Foundation
+{
+    SessionManager::SessionManager ()
+        : session_type_id_ (0)
+    {}
+
+    bool SessionManager::Register (SessionHandler *handler, const std::string &type)
+    {
+        handler-> type = get_session_type_id (type);
+        session_handlers_.push_back (handler);
+    }
+
+    int SessionManager::GetType (const std::string &type) const
+    {
+        SessionTypeMap::const_iterator s = session_types_.find (type);
+        return (s != session_types_.end())? s-> second : -1;
+    }
+
+    int SessionManager::GetType (const SessionInterface *session) const
+    {
+        SessionHandler *owner = get_owner (session);
+        return owner-> type;
+    }
+
+    SessionInterface *SessionManager::Login (const LoginParameters &params)
+    {
+        SessionHandler *accepted = get_accepted (params);
+        return (accepted)? accepted-> Login (params) : 0;
+    }
+
+    bool SessionManager::Logout (const SessionInterface *session)
+    {
+        SessionHandler *owner = get_owner (session);
+        return (owner)? owner-> Logout () : false;
+    }
+
+    void SessionManager::LogoutAll ()
+    {
+        SessionHandlerList::iterator i = session_handlers_.begin();
+        SessionHandlerList::iterator e = session_handlers_.end();
+        for (; i != e; ++i) (*i)-> Logout ();
+    }
+            
+    int SessionManager::get_session_type_id (const std::string &type)
+    {
+        using std::make_pair; 
+
+        if (!session_types_.count (type))
+            session_types_.insert (make_pair (type, session_type_id_++));
+
+        return session_types_[type];
+    }
+
+    SessionHandler *SessionManager::get_accepted (const LoginParameters &params) const
+    {
+        SessionHandler *accepted = 0;
+
+        SessionHandlerList::const_iterator i = session_handlers_.begin();
+        SessionHandlerList::const_iterator e = session_handlers_.end();
+
+        for (; i != e; ++i)
+            if ((*i)-> Accepts (params))
+            {
+                accepted = *i;
+                break;
+            }
+
+        return accepted;
+    }
+
+    SessionHandler *SessionManager::get_owner (const SessionInterface *session) const
+    {
+        SessionHandler *owner = 0;
+
+        SessionHandlerList::const_iterator i = session_handlers_.begin();
+        SessionHandlerList::const_iterator e = session_handlers_.end();
+
+        for (; i != e; ++i)
+            if ((*i)-> Owns (session))
+            {
+                owner = *i;
+                break;
+            }
+
+        return owner;
+    }
+}
