@@ -5,6 +5,9 @@
 
 #include "Framework.h"
 #include "ConfigurationManager.h"
+#include "SessionManager.h"
+#include "LLSession.h"
+
 #include "RexNetworkingModule.h"
 
 
@@ -23,8 +26,20 @@ namespace RexNetworking
 
     void RexNetworkingModule::Initialize()
     {
+        using std::auto_ptr;
+
         LL_THROTTLE_MAX_BPS = framework_->GetDefaultConfig().DeclareSetting
             ("RexLogicModule", "max_bits_per_second", 1000000.0f);
+    
+        // Create local session handlers
+        LLSessionHandler *llhandler = new LLSessionHandler;
+        
+        // Register handlers with session manager
+        framework_-> GetSessionManager()-> 
+            Register (auto_ptr <Foundation::SessionHandler> (llhandler), "OpenSim/LLUDP");
+
+        // Get valid session objects so streams can be pumped
+        active_.push_back (llhandler-> GetSession());
     }
 
     void RexNetworkingModule::Uninitialize()
@@ -33,6 +48,15 @@ namespace RexNetworking
 
     void RexNetworkingModule::Update(f64 frametime)
     {
+        Foundation::SessionInterface *session;
+        SessionList::iterator i (active_.begin());
+        SessionList::iterator e (active_.end());
+        for (; i != e; ++i)
+        {
+            session = *i;
+            if (session-> IsConnected())
+                session-> Stream().Pump();
+        }
     }
 }
 

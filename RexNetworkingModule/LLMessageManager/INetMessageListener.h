@@ -27,13 +27,13 @@ namespace RexNetworking
         /// The callee can process the inputted message any way he wants.
         /// @param msgID The type of the message.
         /// @param msg The actual message contents.
-        virtual void OnNetworkMessageReceived(LLMsgID msgID, LLInMessage *msg) = 0;
+        virtual void OnMessageReceived(LLMsgID msgID, LLInMessage *msg) = 0;
 
         /// Called for each network message that is sent. This callback is provided just for 
         /// debugging/stats collecting. \todo Provide a converter object that converts a 
         //  LLOutMessage to a LLMessage base object or a LLInMessage object to allow reading the contents.
         /// @param msg The message contents.
-        virtual void OnNetworkMessageSent(const LLOutMessage *msg) {}
+        virtual void OnMessageSent(const LLOutMessage *msg) {}
     };
 
 }

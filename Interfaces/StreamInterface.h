@@ -5,22 +5,23 @@
 
 namespace Foundation
 {
-    //! Interface for output Streams
-    class InputStreamInterface
+    //! Interface for World Streams, bi-directional real-time network communication channels
+    class StreamInterface
     {
         public:
-            virtual void OnConnect () = 0;
-            virtual void OnDisconnect () = 0;
+            /// Returns whether stream is connected
             virtual bool IsConnected () const = 0;
-    };
 
-    //! Interface for input Streams
-    class OutputStreamInterface
-    {
-        public:
+            /// Modify the state of the stream
             virtual bool Connect (std::string address, int port) = 0;
             virtual bool Disconnect () = 0;
-            virtual bool IsConnected () const = 0;
+            
+            /// Reacts to changes in the state of the stream
+            virtual void OnConnect () = 0;
+            virtual void OnDisconnect () = 0;
+
+            /// Forces stream messages to be sent/received
+            virtual void Pump () = 0;
     };
 }
 

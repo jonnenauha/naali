@@ -5,7 +5,7 @@
 
 #include "CoreTypes.h"
 #include "SessionInterface.h"
-#include <tr1/functional>
+#include "Framework.h"
 
 namespace Foundation
 {
@@ -28,9 +28,10 @@ namespace Foundation
     class SessionManager
     {
         public:
-            SessionManager ();
+            SessionManager (Framework *framework);
+            ~SessionManager ();
 
-            bool Register (SessionHandler *handler, const std::string &type);
+            bool Register (std::auto_ptr <SessionHandler> handler, const std::string &type);
 
             int GetType (const std::string &type) const;
             int GetType (const SessionInterface *session) const;
@@ -53,6 +54,8 @@ namespace Foundation
 
             int get_session_type_id (const std::string &type);
             int session_type_id_;
+
+            Framework *framework_;
     };
 }
 

@@ -4,17 +4,25 @@
 
 namespace Foundation
 {
-    SessionManager::SessionManager ()
-        : session_type_id_ (0)
+    using std::string;
+    using std::auto_ptr;
+
+    SessionManager::SessionManager (Framework *framework)
+        : session_type_id_ (1), framework_ (framework)
     {}
 
-    bool SessionManager::Register (SessionHandler *handler, const std::string &type)
+    SessionManager::~SessionManager ()
     {
-        handler-> type = get_session_type_id (type);
-        session_handlers_.push_back (handler);
+        LogoutAll();
     }
 
-    int SessionManager::GetType (const std::string &type) const
+    bool SessionManager::Register (auto_ptr <SessionHandler> handl, const std::string &type)
+    {
+        handl-> type = get_session_type_id (type);
+        session_handlers_.push_back (handl.release());
+    }
+
+    int SessionManager::GetType (const string &type) const
     {
         SessionTypeMap::const_iterator s = session_types_.find (type);
         return (s != session_types_.end())? s-> second : -1;
@@ -45,7 +53,7 @@ namespace Foundation
         for (; i != e; ++i) (*i)-> Logout ();
     }
             
-    int SessionManager::get_session_type_id (const std::string &type)
+    int SessionManager::get_session_type_id (const string &type)
     {
         using std::make_pair; 
 

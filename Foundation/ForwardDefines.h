@@ -35,6 +35,7 @@ namespace Foundation
     class ConfigurationManager;
     class ComponentInterface;
     class ThreadTaskManager;
+    class SessionManager;
     class Profiler;
 
     typedef boost::shared_ptr<ModuleManager> ModuleManagerPtr;
@@ -46,6 +47,7 @@ namespace Foundation
     typedef boost::shared_ptr<Platform> PlatformPtr;
     typedef boost::shared_ptr<Application> ApplicationPtr;
     typedef boost::shared_ptr<ThreadTaskManager> ThreadTaskManagerPtr;
+    typedef boost::shared_ptr<SessionManager> SessionManagerPtr;
 
     typedef boost::shared_ptr<ComponentInterface> ComponentInterfacePtr;
     typedef boost::shared_ptr<ComponentInterface> ComponentPtr;

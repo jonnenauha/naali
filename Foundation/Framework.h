@@ -32,7 +32,6 @@ namespace Poco
 namespace Foundation
 {
     class FrameworkQtApplication;
-    class KeyStateListener;
 
     //! contains entry point for the framework.
     /*! Allows access to various managers and services. The standard way of using
@@ -89,6 +88,7 @@ namespace Foundation
         PlatformPtr GetPlatform() const;
         ConfigurationManagerPtr GetConfigManager();
         ThreadTaskManagerPtr GetThreadTaskManager();
+        SessionManagerPtr GetSessionManager();
 
         //! Signal the framework to exit at first possible opportunity
         void Exit();
@@ -228,6 +228,7 @@ namespace Foundation
         EventManagerPtr event_manager_;
         PlatformPtr platform_;
         ThreadTaskManagerPtr thread_task_manager_;
+        SessionManagerPtr session_manager_;
 		 
 		//! default configuration
         ConfigurationManagerPtr config_manager_;

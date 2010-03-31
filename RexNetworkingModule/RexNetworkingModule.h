@@ -6,34 +6,46 @@
 #include "ModuleInterface.h"
 #include "ModuleLoggingFunctions.h"
 
+namespace Foundation
+{
+    class StreamInterface;
+}
+
 namespace RexNetworking
 {
-    /** \defgroup RexNetworking TaigaProtocol Client Interface
-        This module contains implementations of world Sessions and Streams
-        used by RexLogic to speak with a network protocol.
-        @{
-    */
+    typedef std::vector <Foundation::SessionInterface *> SessionList;
+
+    /** \defgroup RexNetworking 
+      This module contains implementations of world Sessions and Streams
+      used by RexLogic to speak with a network protocol.
+      @{
+      */
 
     /// 
     class RexNetworkingModule : public Foundation::ModuleInterfaceImpl
     {
-    public: 
-        RexNetworkingModule();
-        virtual ~RexNetworkingModule();
+        public: 
+            RexNetworkingModule();
+            virtual ~RexNetworkingModule();
 
-        virtual void Initialize();
-        virtual void Uninitialize();
-        virtual void Update(f64 frametime);
+            virtual void Initialize();
+            virtual void Uninitialize();
+            virtual void Update(f64 frametime);
 
-        MODULE_LOGGING_FUNCTIONS
+            MODULE_LOGGING_FUNCTIONS
 
-        //! Returns name of this module. Needed for logging.
-        static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
+            //! Returns name of this module. Needed for logging.
+            static const std::string &NameStatic() 
+            { 
+                return Foundation::Module::NameFromType(type_static_); 
+            }
 
-        //! Returns type of this module. Needed for logging.
-        static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Networking;
+            //! Returns type of this module. Needed for logging.
+            static const Foundation::Module::Type type_static_ = 
+                Foundation::Module::MT_Networking;
 
-    private:
+        private:
+            SessionList active_;
     };
 
     /// @}

@@ -13,8 +13,7 @@
 #include "XmlRpc.h"
 #include "Capabilities.h"
 #include "LLParameters.h"
-#include "LLOutputStream.h"
-#include "LLInputStream.h"
+#include "LLStream.h"
 
 class QNetworkAccessManager;
 class QNetworkReply;
@@ -67,6 +66,7 @@ namespace RexNetworking
     {
         public:
             LLSession (int type);
+            ~LLSession ();
 
             bool Login (const Foundation::LoginParameters &params);
             bool Logout ();
@@ -74,12 +74,11 @@ namespace RexNetworking
             int Type () const { return type_; }
             bool IsConnected() const { return connected_; }
 
-            Foundation::InputStreamInterface& GetInputStream ();
-            Foundation::OutputStreamInterface& GetOutputStream ();
+            Foundation::StreamInterface& Stream ();
 
-            LLAgentParameters   GetAgentParameters () { return agent_; } 
-            LLSessionParameters GetSessionParameters () { return session_; }
-            LLStreamParameters  GetStreamParameters () { return stream_; }
+            LLAgentParameters   GetAgentParameters () { return agentparam_; } 
+            LLSessionParameters GetSessionParameters () { return sessionparam_; }
+            LLStreamParameters  GetStreamParameters () { return streamparam_; }
 
         private:
             bool    connected_;
@@ -88,12 +87,11 @@ namespace RexNetworking
             LLLogin     login_;
             LLLogout    logout_;
 
-            LLAgentParameters   agent_;
-            LLSessionParameters session_;
-            LLStreamParameters  stream_;
+            LLAgentParameters   agentparam_;
+            LLSessionParameters sessionparam_;
+            LLStreamParameters  streamparam_;
 
-            LLOutputStream  out_stream_;
-            LLInputStream   in_stream_;
+            LLStream  stream_;
 
             friend class LLLogin;
             friend class LLLogout;
@@ -113,6 +111,8 @@ namespace RexNetworking
 
             bool Owns (const Foundation::SessionInterface *session);
             bool Logout ();
+
+            LLSession *GetSession();
 
         private:
             LLSession   *session_;

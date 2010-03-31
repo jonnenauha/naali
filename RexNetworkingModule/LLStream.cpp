@@ -76,6 +76,11 @@ namespace RexNetworking
         return true;
     }
 
+    void LLStream::Pump ()
+    {
+        messagemgr_-> ProcessMessages ();
+    }
+
     bool LLStream::IsConnected () const
     {
         return connected_;

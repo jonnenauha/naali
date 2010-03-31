@@ -15,7 +15,7 @@ init_target (RexNetworkingModule OUTPUT modules/core)
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
-file (GLOB MOC_FILES LLSession.h LLInputStream.h LLOutputStream.h Capabilities.h XmlRpc.h)
+file (GLOB MOC_FILES LLSession.h LLStream.h Capabilities.h XmlRpc.h)
 
 AddSourceFolder (LLMessageManager)
 #AddSourceFolder (LLInventory)

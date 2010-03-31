@@ -13,8 +13,6 @@
 #include "Avatar/AvatarControllable.h"
 #include "CameraControllable.h"
 
-#include "LLSession.h"
-
 #include "EventHandlers/NetworkEventHandler.h"
 #include "EventHandlers/NetworkStateEventHandler.h"
 #include "EventHandlers/InputEventHandler.h"
@@ -69,7 +67,6 @@
 #include "ModuleManager.h"
 #include "ConsoleCommand.h"
 #include "ConsoleCommandServiceInterface.h"
-#include "ServiceManager.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -254,9 +251,7 @@ void RexLogicModule::PostInitialize()
         "If add is called and EC already exists for entity, EC's visibility is toggled.",
         Console::Bind(this, &RexLogicModule::ConsoleHighlightTest)));
 
-    Foundation::SessionManager sessionmgr;
-    sessionmgr.Register (new RexNetworking::LLSessionHandler, "OpenSim/LLUDP");
-    session_ = sessionmgr.Login (QVariantMap ());
+    session_ = framework_-> GetSessionManager()-> Login (QVariantMap ());
 }
 
 void RexLogicModule::SubscribeToNetworkEvents(boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> currentProtocolModule)
@@ -417,8 +412,10 @@ void RexLogicModule::Update(f64 frametime)
         }
 
         std::cout << "!! Session: is ";
-        if (session_-> IsConnected())
+        if (session_ && session_-> IsConnected())
+        {
             std::cout << "connected" << std::endl;
+        }
         else
             std::cout << "not connected" << std::endl;
     }

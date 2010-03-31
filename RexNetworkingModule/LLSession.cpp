@@ -308,18 +308,18 @@ namespace RexNetworking
             if (response["login"] == "true")
             {
                 // parse login return parameters
-                session_-> stream_ = parse_stream_params (response);
-                session_-> session_ = parse_session_params (response);
-                session_-> agent_ = parse_agent_params (response);
+                session_-> streamparam_ = parse_stream_params (response);
+                session_-> sessionparam_ = parse_session_params (response);
+                session_-> agentparam_ = parse_agent_params (response);
 
-                // set up out stream 
-                session_-> out_stream_.SetParameters (session_-> stream_);
-                session_-> out_stream_.Connect 
-                    (session_-> session_.sim_ip.toStdString(), 
-                     session_-> session_.sim_port);
+                // set up world stream 
+                session_-> stream_.SetParameters (session_-> streamparam_);
+                session_-> stream_.Connect 
+                    (session_-> sessionparam_.sim_ip.toStdString(), 
+                     session_-> sessionparam_.sim_port);
 
                 // get capabilities
-                QUrl seedcap = session_-> session_.seed_capabilities;
+                QUrl seedcap = session_-> sessionparam_.seed_capabilities;
                 Capabilities::Client client (seedcap, http_);
                 caps_ = client.request ();
 
@@ -337,7 +337,10 @@ namespace RexNetworking
     {
         if (caps_-> reply-> error() == QNetworkReply::NoError)
         {
-            session_-> session_.capabilities = caps_-> result;
+            // get caps
+            session_-> sessionparam_.capabilities = caps_-> result;
+
+            // update future
             session_-> connected_ = true;
         }
         else
@@ -349,13 +352,14 @@ namespace RexNetworking
     //=========================================================================
     // Logout object for LLSession
 
-    LLLogout::LLLogout (LLSession *sesson) :
-        session_ (0)
+    LLLogout::LLLogout (LLSession *session) :
+        session_ (session)
     {
     }
 
     bool LLLogout::operator() ()
     {
+        session_-> stream_.Disconnect();
         return true;
     }
 
@@ -367,6 +371,11 @@ namespace RexNetworking
         login_ (this), logout_ (this)
     {}
 
+    LLSession::~LLSession ()
+    {
+        stream_.Disconnect();
+    }
+
     bool LLSession::Login (const LoginParameters &params) 
     { 
         return login_ (parse_login_params (params)); 
@@ -377,14 +386,9 @@ namespace RexNetworking
         return logout_ (); 
     }
 
-    Foundation::InputStreamInterface& LLSession::GetInputStream ()
+    Foundation::StreamInterface& LLSession::Stream ()
     {
-        return in_stream_;
-    }
-
-    Foundation::OutputStreamInterface& LLSession::GetOutputStream ()
-    {
-        return out_stream_;
+        return stream_;
     }
 
     //=========================================================================
@@ -406,17 +410,23 @@ namespace RexNetworking
 
     SessionInterface *LLSessionHandler::Login (const LoginParameters &params) 
     { 
-        if (!session_) session_ = new LLSession (type);
-        return (session_-> Login (params))? session_ : 0;
+        return (GetSession()-> Login (params))? session_ : 0;
     }
 
     bool LLSessionHandler::Owns (const SessionInterface *session)
     {
-        return (session_ == session);
+        return (GetSession() == session);
     }
 
     bool LLSessionHandler::Logout () 
     { 
-        return session_-> Logout (); 
+        return GetSession()-> Logout (); 
+    }
+
+    LLSession *LLSessionHandler::GetSession ()
+    {
+        if (!type) return 0;
+        if (!session_) session_ = new LLSession (type);
+        return session_;
     }
 }

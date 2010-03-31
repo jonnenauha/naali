@@ -137,13 +137,16 @@ namespace RexNetworking
 
         public slots:
             /// Establishes a real-time stream connect using LLUDP
-            bool Connect (std::string address, int port);
+            virtual bool Connect (std::string address, int port);
 
             /// Disconnects the stream
-            bool Disconnect ();
+            virtual bool Disconnect ();
 
             /// @return True if the client connected to a server.
-            bool IsConnected () const;
+            virtual bool IsConnected () const;
+
+            /// Process LLMessageManager
+            virtual void Pump ();
 
             /// Set require stream parameters
             void SetParameters (const LLStreamParameters &params);

@@ -26,6 +26,7 @@
 #include "SceneEvents.h"
 #include "ResourceInterface.h"
 #include "ThreadTaskManager.h"
+#include "SessionManager.h"
 #include "RenderServiceInterface.h"
 #include "ConsoleServiceInterface.h"
 #include "ConsoleCommandServiceInterface.h"
@@ -118,6 +119,7 @@ namespace Foundation
             service_manager_ = ServiceManagerPtr(new ServiceManager(this));
             event_manager_ = EventManagerPtr(new EventManager(this));
             thread_task_manager_ = ThreadTaskManagerPtr(new ThreadTaskManager(this));
+            session_manager_ = SessionManagerPtr(new SessionManager(this));
 
             Scene::Events::RegisterSceneEvents(event_manager_);
             Resource::Events::RegisterResourceEvents(event_manager_);
@@ -615,6 +617,7 @@ namespace Foundation
     PlatformPtr Framework::GetPlatform() const { return platform_; }
     ConfigurationManagerPtr Framework::GetConfigManager() { return config_manager_;}
     ThreadTaskManagerPtr Framework::GetThreadTaskManager() { return thread_task_manager_;}
+    SessionManagerPtr Framework::GetSessionManager() { return session_manager_;}
 
     ConfigurationManager &Framework::GetDefaultConfig() { return *(config_manager_.get()); }
 

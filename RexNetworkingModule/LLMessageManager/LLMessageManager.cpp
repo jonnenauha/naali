@@ -297,7 +297,7 @@ namespace RexNetworking
                 break;
             default:
                 // Pass the message to the listener(s).
-                messageListener->OnNetworkMessageReceived(msg.GetMessageID(), &msg);
+                messageListener->OnMessageReceived(msg.GetMessageID(), &msg);
                 break;
             }
         }
@@ -489,9 +489,6 @@ namespace RexNetworking
         sentDatagrams.InsertRecord(1.0);
         sentDatabytes.InsertRecord(data.size());
 #endif
-
-        if (messageListener)
-            messageListener->OnNetworkMessageSent(msg);
     }
 
     void LLMessageManager::QueuePacketACK(uint32_t packetID)

@@ -22,8 +22,7 @@ namespace Foundation
             virtual bool Login (const LoginParameters &params) = 0;
             virtual bool Logout () = 0;
 
-            virtual InputStreamInterface& GetInputStream () = 0;
-            virtual OutputStreamInterface& GetOutputStream () = 0;
+            virtual StreamInterface& Stream () = 0;
     };
 }
 
