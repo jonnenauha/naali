@@ -84,6 +84,24 @@ namespace Foundation
         exec ();
     }
     
+    bool FrameworkQtApplication::notify (QObject *receiver, QEvent *event)
+    {
+        try 
+        {
+            return QApplication::notify (receiver, event);
+        }
+        catch (std::exception &e)
+        {
+            std::cerr << "caught exception in event handler: " << e.what() << std::endl;
+        }
+        catch (...)
+        {
+            std::cerr << "caught unknown exception in event handler. " << std::endl;
+        }
+
+        abort();
+    }
+
     bool FrameworkQtApplication::eventFilter(QObject *obj,  QEvent *event)
     {
         if (obj == this)

@@ -1,6 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
-#ifndef incl_RexNetworkin_LLMessageException_h
-#define incl_RexNetworkin_LLMessageException_h
+#ifndef incl_RexNetworking_LLMessageException_h
+#define incl_RexNetworking_LLMessageException_h
 
 #include <cstdlib>
 #include <cstring>

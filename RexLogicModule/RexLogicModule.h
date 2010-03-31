@@ -334,7 +334,7 @@ namespace RexLogic
         //! MainPanel handler
         MainPanelHandler *main_panel_handler_;
 
-        Foundation::SessionInterface *session_;
+        Foundation::Session *session_;
     };
 }
 

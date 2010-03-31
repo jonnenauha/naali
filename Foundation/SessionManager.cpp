@@ -28,19 +28,19 @@ namespace Foundation
         return (s != session_types_.end())? s-> second : -1;
     }
 
-    int SessionManager::GetType (const SessionInterface *session) const
+    int SessionManager::GetType (const Session *session) const
     {
         SessionHandler *owner = get_owner (session);
         return owner-> type;
     }
 
-    SessionInterface *SessionManager::Login (const LoginParameters &params)
+    Session *SessionManager::Login (const Session::LoginParameters &params)
     {
         SessionHandler *accepted = get_accepted (params);
         return (accepted)? accepted-> Login (params) : 0;
     }
 
-    bool SessionManager::Logout (const SessionInterface *session)
+    bool SessionManager::Logout (const Session *session)
     {
         SessionHandler *owner = get_owner (session);
         return (owner)? owner-> Logout () : false;
@@ -63,7 +63,7 @@ namespace Foundation
         return session_types_[type];
     }
 
-    SessionHandler *SessionManager::get_accepted (const LoginParameters &params) const
+    SessionHandler *SessionManager::get_accepted (const Session::LoginParameters &p) const
     {
         SessionHandler *accepted = 0;
 
@@ -71,7 +71,7 @@ namespace Foundation
         SessionHandlerList::const_iterator e = session_handlers_.end();
 
         for (; i != e; ++i)
-            if ((*i)-> Accepts (params))
+            if ((*i)-> Accepts (p))
             {
                 accepted = *i;
                 break;
@@ -80,7 +80,7 @@ namespace Foundation
         return accepted;
     }
 
-    SessionHandler *SessionManager::get_owner (const SessionInterface *session) const
+    SessionHandler *SessionManager::get_owner (const Session *session) const
     {
         SessionHandler *owner = 0;
 

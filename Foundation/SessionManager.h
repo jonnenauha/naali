@@ -4,7 +4,7 @@
 #define incl_Foundation_SessionManager_h
 
 #include "CoreTypes.h"
-#include "SessionInterface.h"
+#include "Session.h"
 #include "Framework.h"
 
 namespace Foundation
@@ -13,10 +13,10 @@ namespace Foundation
     //  finalizes them at logout
     struct SessionHandler
     {
-        virtual bool Accepts (const LoginParameters &params) = 0;
-        virtual SessionInterface *Login (const LoginParameters &params) = 0;
+        virtual bool Accepts (const Session::LoginParameters &params) = 0;
+        virtual Session *Login (const Session::LoginParameters &params) = 0;
 
-        virtual bool Owns (const SessionInterface *session) = 0;
+        virtual bool Owns (const Session *session) = 0;
         virtual bool Logout () = 0;
 
         int priority;
@@ -34,11 +34,11 @@ namespace Foundation
             bool Register (std::auto_ptr <SessionHandler> handler, const std::string &type);
 
             int GetType (const std::string &type) const;
-            int GetType (const SessionInterface *session) const;
+            int GetType (const Session *session) const;
 
-            SessionInterface *Login (const LoginParameters &params);
+            Session *Login (const Session::LoginParameters &params);
 
-            bool Logout (const SessionInterface *session);
+            bool Logout (const Session *session);
             void LogoutAll ();
 
          private:
@@ -49,8 +49,8 @@ namespace Foundation
             SessionTypeMap      session_types_;
 
          private:
-            SessionHandler *get_accepted (const LoginParameters &params) const;
-            SessionHandler *get_owner (const SessionInterface *session) const;
+            SessionHandler *get_accepted (const Session::LoginParameters &params) const;
+            SessionHandler *get_owner (const Session *session) const;
 
             int get_session_type_id (const std::string &type);
             int session_type_id_;

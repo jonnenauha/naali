@@ -16,8 +16,7 @@
 
 namespace RexNetworking
 {
-    using Foundation::LoginParameters;
-    using Foundation::SessionInterface;
+    using Foundation::Session;
     
     //=========================================================================
     // pretty printers
@@ -240,7 +239,7 @@ namespace RexNetworking
         // TODO
         LLLoginParameters params;
         params.first = "d"; params.last = "d"; params.pass = "d";
-        params.service = "http://example.com:8002";
+        params.service = "http://world.realxtend.org:9000";
         return params;
     }
 
@@ -304,6 +303,8 @@ namespace RexNetworking
         if (login_-> reply-> error() == QNetworkReply::NoError)
         {
             QVariantMap response (login_-> result.toMap ());
+
+            variant_print (response, " ");
 
             if (response["login"] == "true")
             {
@@ -386,7 +387,7 @@ namespace RexNetworking
         return logout_ (); 
     }
 
-    Foundation::StreamInterface& LLSession::Stream ()
+    Foundation::Stream& LLSession::GetStream ()
     {
         return stream_;
     }
@@ -403,17 +404,17 @@ namespace RexNetworking
         delete session_;
     }
 
-    bool LLSessionHandler::Accepts (const LoginParameters &params) 
+    bool LLSessionHandler::Accepts (const Session::LoginParameters &params) 
     { 
         return true; // TODO: sniff login params
     } 
 
-    SessionInterface *LLSessionHandler::Login (const LoginParameters &params) 
+    Session *LLSessionHandler::Login (const Session::LoginParameters &params) 
     { 
         return (GetSession()-> Login (params))? session_ : 0;
     }
 
-    bool LLSessionHandler::Owns (const SessionInterface *session)
+    bool LLSessionHandler::Owns (const Session *session)
     {
         return (GetSession() == session);
     }

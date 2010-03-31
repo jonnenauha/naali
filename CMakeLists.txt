@@ -21,6 +21,13 @@ include (ConfigurePackages)
 # Disable unnecessary build types
 set (CMAKE_CONFIGURATION_TYPES "Release;RelWithDebInfo;Debug" CACHE STRING "Configurations" FORCE)
 
+# Support reverse debugging
+if (UNIX)
+    SET(CMAKE_BUILD_TYPE ReverseDebug)
+    SET(CMAKE_CXX_FLAGS_REVERSEDEBUG "-ggdb")
+    SET(CMAKE_C_FLAGS_REVERSEDEBUG "-ggdb")
+endif ()
+
 # Use Caelum, but not Hydrax for now.
 SET (CAELUM 1)
 SET (HYDRAX 0)

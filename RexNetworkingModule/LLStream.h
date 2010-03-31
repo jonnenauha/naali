@@ -7,13 +7,11 @@
 #include "Vector3D.h"
 #include "Quaternion.h"
 
-#include "StreamInterface.h"
+#include "Stream.h"
 #include "LLMessageManager/LLMessageManager.h"
 #include "LLParameters.h"
 
 #include <QObject>
-#include <tr1/functional>
-using std::tr1::function;
 
 namespace RexNetworking
 {
@@ -40,16 +38,16 @@ namespace RexNetworking
         std::string description;
     };
 
-    typedef std::map <LLMsgID, function <void (LLInMessage*)> > MessageHandlerMap;
-
     class LLStream : 
         public QObject, 
-        public Foundation::StreamInterface, 
+        public Foundation::Stream, 
         public INetMessageListener
     {
         Q_OBJECT
 
         public:
+
+            typedef std::tr1::function <void (LLInMessage*)> LLMessageHandler;
 
             //=================================================================
             // Logging
@@ -75,65 +73,29 @@ namespace RexNetworking
             virtual ~LLStream();
 
             //=================================================================
-            // Methods for receiving messages
+            // Handling messages
 
         public:
-            //! Register message handlers by id
-            virtual void RegisterHandler (LLMsgID id, function <void (LLInMessage*)> handler);
-
             //! Receives messages from LLMessageManager
-            virtual void OnMessageReceived (LLMsgID id, LLInMessage *msg);
+            void OnMessageReceived (LLMsgID id, LLInMessage *msg);
 
-            //! Called when connected
-            virtual void OnConnect ();
-
-            //! Called when disconnected
-            virtual void OnDisconnect ();
-
-            //! TODO
-            virtual void OnRegionHandshake (LLInMessage* msg);
-
-            //! TODO
-            virtual void OnAgentMovementComplete (LLInMessage* msg);
-
-            //! TODO
-            virtual void OnAvatarAnimation (LLInMessage* msg);
-
-            //! TODO
-            virtual void OnGenericMessage (LLInMessage* msg);
-
-            //! TODO
-            virtual void OnLogoutReply (LLInMessage* msg);
-
-            //! TODO
-            virtual void OnImprovedTerseObjectUpdate (LLInMessage* msg);
-
-            //! TODO
-            virtual void OnKillObject (LLInMessage* msg);
-
-            //! TODO
-            virtual void OnObjectUpdate (LLInMessage* msg);
-
-            //! TODO
-            virtual void OnObjectProperties (LLInMessage* msg);
-
-            //! TODO
-            virtual void OnAttachedSound (LLInMessage* msg);
-
-            //! TODO
-            virtual void OnAttachedSoundGainChange (LLInMessage* msg);
-
-            //! TODO
-            virtual void OnSoundTrigger (LLInMessage* msg);
-
-            //! TODO
-            virtual void OnPreloadSound (LLInMessage* msg);
-
-            //! TODO
-            virtual void OnScriptDialog (LLInMessage* msg);
-
+            LLMessageHandler OnRegionHandshake;
+            LLMessageHandler OnAgentMovementComplete;
+            LLMessageHandler OnAvatarAnimation;
+            LLMessageHandler OnGenericMessage;
+            LLMessageHandler OnLogoutReply;
+            LLMessageHandler OnImprovedTerseObjectUpdate;
+            LLMessageHandler OnKillObject;
+            LLMessageHandler OnObjectUpdate;
+            LLMessageHandler OnObjectProperties;
+            LLMessageHandler OnAttachedSound;
+            LLMessageHandler OnAttachedSoundGainChange;
+            LLMessageHandler OnSoundTrigger;
+            LLMessageHandler OnPreloadSound;
+            LLMessageHandler OnScriptDialog;
+            
             //=================================================================
-            // Methods for stream control
+            // Stream control
 
         public slots:
             /// Establishes a real-time stream connect using LLUDP
@@ -152,7 +114,7 @@ namespace RexNetworking
             void SetParameters (const LLStreamParameters &params);
 
             //=================================================================
-            // Methods for sending messages
+            // Sending messages
 
             /// Send the UDP chat packet.
             void SendChatFromViewerPacket(const std::string &text, s32 channel = 0);
@@ -546,15 +508,15 @@ namespace RexNetworking
             /// WriteFloatToBytes
             void WriteFloatToBytes(float value, uint8_t* bytes, int& idx);
 
+            /// called in constructor
+            void initialize_();
+
         private:
             /// LLUDP Packet manager
             LLMessageManager *messagemgr_;
 
             /// Server-spesific info for this client.
             LLStreamParameters params_;
-
-            /// table to store individual message handlers
-            MessageHandlerMap handlers_;
 
             /// Is client connected to a server.
             bool connected_;

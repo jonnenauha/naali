@@ -13,7 +13,7 @@ namespace Foundation
 
 namespace RexNetworking
 {
-    typedef std::vector <Foundation::SessionInterface *> SessionList;
+    typedef std::vector <Foundation::Session *> SessionList;
 
     /** \defgroup RexNetworking 
       This module contains implementations of world Sessions and Streams

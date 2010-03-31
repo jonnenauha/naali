@@ -48,14 +48,14 @@ namespace RexNetworking
 
     void RexNetworkingModule::Update(f64 frametime)
     {
-        Foundation::SessionInterface *session;
+        Foundation::Session *session;
         SessionList::iterator i (active_.begin());
         SessionList::iterator e (active_.end());
         for (; i != e; ++i)
         {
             session = *i;
             if (session-> IsConnected())
-                session-> Stream().Pump();
+                session-> GetStream().Pump();
         }
     }
 }

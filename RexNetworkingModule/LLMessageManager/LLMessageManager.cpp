@@ -300,6 +300,8 @@ namespace RexNetworking
                 messageListener->OnMessageReceived(msg.GetMessageID(), &msg);
                 break;
             }
+            
+            std::cout << "receiving: " << std::hex << msg.GetMessageID() << std::endl;
         }
         catch (Exception &e)
         {
@@ -475,6 +477,8 @@ namespace RexNetworking
             AddMessageToResendQueue(message);
         else
             unusedMessagePool.push_back(message);
+        
+        std::cout << "sending: " << std::hex << message-> GetMessageID() << std::endl;
     }
 
     void LLMessageManager::SendProcessedMessage(LLOutMessage *msg)

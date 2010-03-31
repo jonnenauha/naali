@@ -80,6 +80,10 @@ bool NetworkEventHandler::HandleOpenSimNetworkEvent(event_id_t event_id, Foundat
 {
     PROFILE(NetworkEventHandler_HandleOpenSimNetworkEvent);
     ProtocolUtilities::NetworkEventInboundData *netdata = checked_static_cast<ProtocolUtilities::NetworkEventInboundData *>(data);
+
+    ProtocolUtilities::NetInMessage &msg = *netdata->message;
+    std::cout << "RexLogic: event id: " << event_id << std::endl;
+
     switch(event_id)
     {
     case RexNetMsgRegionHandshake:

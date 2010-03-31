@@ -8,7 +8,7 @@
 #include <QVariantMap>
 
 #include "SessionManager.h"
-#include "SessionInterface.h"
+#include "Session.h"
 
 #include "XmlRpc.h"
 #include "Capabilities.h"
@@ -62,19 +62,19 @@ namespace RexNetworking
     //=========================================================================
     // LL Session 
 
-    class LLSession : public Foundation::SessionInterface
+    class LLSession : public Foundation::Session
     {
         public:
             LLSession (int type);
             ~LLSession ();
 
-            bool Login (const Foundation::LoginParameters &params);
+            bool Login (const Foundation::Session::LoginParameters &params);
             bool Logout ();
 
             int Type () const { return type_; }
             bool IsConnected() const { return connected_; }
 
-            Foundation::StreamInterface& Stream ();
+            Foundation::Stream& GetStream ();
 
             LLAgentParameters   GetAgentParameters () { return agentparam_; } 
             LLSessionParameters GetSessionParameters () { return sessionparam_; }
@@ -106,10 +106,10 @@ namespace RexNetworking
             LLSessionHandler ();
             virtual ~LLSessionHandler ();
 
-            bool Accepts (const Foundation::LoginParameters &params);
-            Foundation::SessionInterface *Login (const Foundation::LoginParameters &params);
+            bool Accepts (const Foundation::Session::LoginParameters &params);
+            Foundation::Session *Login (const Foundation::Session::LoginParameters &params);
 
-            bool Owns (const Foundation::SessionInterface *session);
+            bool Owns (const Foundation::Session *session);
             bool Logout ();
 
             LLSession *GetSession();

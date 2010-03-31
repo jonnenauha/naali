@@ -34,6 +34,8 @@ namespace Foundation
               
             void Go();
 
+            bool notify (QObject *receiver, QEvent *e);
+
         public slots:
             void UpdateFrame();
             void ChangeLanguage(const QString& file);

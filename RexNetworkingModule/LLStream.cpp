@@ -19,12 +19,15 @@ namespace RexNetworking
     const std::string LL_MESSAGE_TEMPLATE_FILE = "./data/message_template.msg";
     extern Real LL_THROTTLE_MAX_BPS;
 
+    struct NullConnectHandler { void operator()(){} };
+    struct NullLLMessageHandler { void operator()(LLInMessage *){} };
+
     LLStream::LLStream () : 
         messagemgr_ (new LLMessageManager (LL_MESSAGE_TEMPLATE_FILE.c_str())),
         connected_(false), 
         block_serial_num_(0)
     {
-        LogInfo("LLStream created and ready.");
+        initialize_();
     }
 
     LLStream::LLStream (const LLStreamParameters &params) : 
@@ -33,7 +36,29 @@ namespace RexNetworking
         connected_(false), 
         block_serial_num_(0)
     {
+        initialize_();
+    }
+
+    void LLStream::initialize_ ()
+    {
         LogInfo("LLStream created and ready.");
+        
+        OnConnect                   = NullConnectHandler();
+        OnDisconnect                = NullConnectHandler();
+        OnRegionHandshake           = NullLLMessageHandler();
+        OnAgentMovementComplete     = NullLLMessageHandler();
+        OnAvatarAnimation           = NullLLMessageHandler();
+        OnGenericMessage            = NullLLMessageHandler();
+        OnLogoutReply               = NullLLMessageHandler();
+        OnImprovedTerseObjectUpdate = NullLLMessageHandler();
+        OnKillObject                = NullLLMessageHandler();
+        OnObjectUpdate              = NullLLMessageHandler();
+        OnObjectProperties          = NullLLMessageHandler();
+        OnAttachedSound             = NullLLMessageHandler();
+        OnAttachedSoundGainChange   = NullLLMessageHandler();
+        OnSoundTrigger              = NullLLMessageHandler();
+        OnPreloadSound              = NullLLMessageHandler();
+        OnScriptDialog              = NullLLMessageHandler();
     }
 
     LLStream::~LLStream()
@@ -41,25 +66,19 @@ namespace RexNetworking
         delete messagemgr_;
     }
 
-    void LLStream::OnConnect ()
-    {
-        messagemgr_-> RegisterNetworkListener (this);
-        connected_ = true;
-        SendLoginSuccessfullPackets ();
-    }
-
-    void LLStream::OnDisconnect ()
-    {
-        connected_ = false;
-        messagemgr_-> RegisterNetworkListener (this);
-    }
-
     bool LLStream::Connect (std::string address, int port)
     {
         if (!connected_) 
         {
             if (messagemgr_-> ConnectTo (address.c_str(), port))
+            {
+                messagemgr_-> RegisterNetworkListener (this);
+                connected_ = true;
+
                 OnConnect ();
+
+                SendLoginSuccessfullPackets ();
+            }
         }
 
         return connected_;
@@ -69,7 +88,10 @@ namespace RexNetworking
     {
         if (connected_)
         {
+            messagemgr_-> RegisterNetworkListener (this);
             messagemgr_-> Disconnect ();
+            connected_ = false;
+
             OnDisconnect ();
         }
 
@@ -91,12 +113,6 @@ namespace RexNetworking
         params_ = params;
     }
     
-    void LLStream::RegisterHandler (LLMsgID msg_id, function <void (LLInMessage*)> handler)
-    {
-        using std::make_pair;
-        handlers_.insert (make_pair (msg_id, handler));
-    }
-
     void LLStream::OnMessageReceived (LLMsgID msg_id, LLInMessage *msg)
     {
         std::cout << "LLStream: received: " << msg_id << std::endl;
@@ -110,7 +126,7 @@ namespace RexNetworking
                 OnAgentMovementComplete (msg); break;
 
             case RexNetMsgAvatarAnimation:
-                OnAvatarAnimation(msg); break;
+                OnAvatarAnimation (msg); break;
 
             case RexNetMsgGenericMessage:
                 OnGenericMessage (msg); break;
@@ -147,76 +163,6 @@ namespace RexNetworking
         }
     }
             
-    void LLStream::OnRegionHandshake (LLInMessage* msg)
-    {
-        handlers_[RexNetMsgRegionHandshake] (msg);
-    }
-
-    void LLStream::OnAgentMovementComplete (LLInMessage* msg)
-    {
-        handlers_[RexNetMsgAgentMovementComplete] (msg);
-    }
-
-    void LLStream::OnAvatarAnimation (LLInMessage* msg)
-    {
-        handlers_[RexNetMsgAvatarAnimation] (msg);
-    }
-
-    void LLStream::OnGenericMessage (LLInMessage* msg)
-    {
-        handlers_[RexNetMsgGenericMessage] (msg);
-    }
-
-    void LLStream::OnLogoutReply (LLInMessage* msg)
-    {
-        handlers_[RexNetMsgLogoutReply] (msg);
-    }
-
-    void LLStream::OnImprovedTerseObjectUpdate (LLInMessage* msg)
-    {
-        handlers_[RexNetMsgImprovedTerseObjectUpdate] (msg);
-    }
-
-    void LLStream::OnKillObject (LLInMessage* msg)
-    {
-        handlers_[RexNetMsgKillObject] (msg);
-    }
-
-    void LLStream::OnObjectUpdate (LLInMessage* msg)
-    {
-        handlers_[RexNetMsgObjectUpdate] (msg);
-    }
-
-    void LLStream::OnObjectProperties (LLInMessage* msg)
-    {
-        handlers_[RexNetMsgObjectProperties] (msg);
-    }
-
-    void LLStream::OnAttachedSound (LLInMessage* msg)
-    {
-        handlers_[RexNetMsgAttachedSound] (msg);
-    }
-
-    void LLStream::OnAttachedSoundGainChange (LLInMessage* msg)
-    {
-        handlers_[RexNetMsgAttachedSoundGainChange] (msg);
-    }
-
-    void LLStream::OnSoundTrigger (LLInMessage* msg)
-    {
-        handlers_[RexNetMsgSoundTrigger] (msg);
-    }
-
-    void LLStream::OnPreloadSound (LLInMessage* msg)
-    {
-        handlers_[RexNetMsgPreloadSound] (msg);
-    }
-
-    void LLStream::OnScriptDialog (LLInMessage* msg)
-    {
-        handlers_[RexNetMsgScriptDialog] (msg);
-    }
-
     void LLStream::SendUseCircuitCodePacket()
     {
         if (!connected_)
