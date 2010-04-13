@@ -127,7 +127,7 @@ namespace RexNetworking
     static LLInventorySkeleton parse_inventory_skeleton (const QVariantMap &m);
     static LLFolderSkeleton parse_root_folder (const QVariantList &l);
     static LLFolderSkeleton parse_folder_skeleton (const QVariantMap &m);
-    static LLLoginParameters parse_login_params (const QVariantMap &p);
+    static LLLoginParameters parse_login_params (const Session::LoginParameters &p);
 
 
     static LLAgentParameters parse_agent_params (const QVariantMap &m)
@@ -234,7 +234,7 @@ namespace RexNetworking
         return f;
     }
 
-    static LLLoginParameters parse_login_params (const QVariantMap &p)
+    static LLLoginParameters parse_login_params (const Session::LoginParameters &p)
     {
         // TODO
         LLLoginParameters params;
@@ -404,6 +404,13 @@ namespace RexNetworking
         delete session_;
     }
 
+    Session *LLSessionHandler::GetSession ()
+    {
+        if (!type) return 0;
+        if (!session_) session_ = new LLSession (type);
+        return session_;
+    }
+
     bool LLSessionHandler::Accepts (const Session::LoginParameters &params) 
     { 
         return true; // TODO: sniff login params
@@ -424,10 +431,8 @@ namespace RexNetworking
         return GetSession()-> Logout (); 
     }
 
-    LLSession *LLSessionHandler::GetSession ()
+    void LLSessionHandler::SetStreamHandlers (const LLStream::MessageHandlerMap &map)
     {
-        if (!type) return 0;
-        if (!session_) session_ = new LLSession (type);
-        return session_;
+        static_cast <LLStream &> (GetSession()-> GetStream()).SetHandlers (map);
     }
 }

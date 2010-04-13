@@ -1,3 +1,6 @@
+# Git diff files
+*.orig
+
 # Visual studio -specific ignores.
 *.suo
 *.ncb

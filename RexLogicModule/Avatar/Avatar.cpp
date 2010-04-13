@@ -102,23 +102,21 @@ namespace RexLogic
         return entity;
     }
 
-    bool Avatar::HandleOSNE_ObjectUpdate(ProtocolUtilities::NetworkEventInboundData* data)
+    bool Avatar::HandleOSNE_ObjectUpdate(LLInMessage* msg)
     {
-        ProtocolUtilities::NetInMessage &msg = *data->message;
-        msg.ResetReading();
-
-        uint64_t regionhandle = msg.ReadU64();
-        msg.SkipToNextVariable(); ///\todo Unhandled inbound variable 'TimeDilation'.U16
-
+        msg->ResetReading();
+        uint64_t regionhandle = msg->ReadU64();
+        msg->SkipToNextVariable(); // TimeDilation U16 ///\todo Unhandled inbound variable 'TimeDilation'.
+        
         // Variable block: Object Data
-        size_t instance_count = msg.ReadCurrentBlockInstanceCount();
+        size_t instance_count = msg->ReadCurrentBlockInstanceCount();
         for(size_t i = 0; i < instance_count; ++i)
         {
-            uint32_t localid = msg.ReadU32(); 
-            msg.SkipToNextVariable();        ///\todo Unhandled inbound variable 'State' U8
-            RexUUID fullid = msg.ReadUUID();
-            msg.SkipToNextVariable();        ///\todo Unhandled inbound variable 'CRC' U#"
-            uint8_t pcode = msg.ReadU8();
+            uint32_t localid = msg->ReadU32(); 
+            msg->SkipToNextVariable();		// State U8 ///\todo Unhandled inbound variable 'State'.
+            RexUUID fullid = msg->ReadUUID();
+            msg->SkipToNextVariable();		// CRC U32 ///\todo Unhandled inbound variable 'CRC'.
+            uint8_t pcode = msg->ReadU8();
 
             Scene::EntityPtr entity = GetOrCreateAvatarEntity(localid, fullid);
             if (!entity)
@@ -130,9 +128,9 @@ namespace RexLogic
             presence->regionHandle = regionhandle;
 
             // Get position from objectdata
-            msg.SkipToFirstVariableByName("ObjectData");
+            msg->SkipToFirstVariableByName("ObjectData");
             size_t bytes_read = 0;
-            const uint8_t *objectdatabytes = msg.ReadBuffer(&bytes_read);
+            const uint8_t *objectdatabytes = msg->ReadBuffer(&bytes_read);
             if (bytes_read >= 28)
             {
                 // The data contents:
@@ -141,11 +139,13 @@ namespace RexLogic
                 netpos->Updated();
             }
 
-            msg.SkipToFirstVariableByName("ParentID");
-            presence->parentId = msg.ReadU32();
+            msg->SkipToFirstVariableByName("ParentID");
+            presence->ParentId = msg->ReadU32();
 
-            msg.SkipToFirstVariableByName("NameValue");
-            QString namevalue = QString::fromUtf8(msg.ReadString().c_str());
+            // NameValue contains: "FirstName STRING RW SV <firstName>\nLastName STRING RW SV <lastName>"
+            // When using rex auth <firstName> contains both first and last name and <lastName> contains the auth server address
+            msg->SkipToFirstVariableByName("NameValue");
+            QString namevalue = QString::fromUtf8(msg->ReadString().c_str());
             NameValueMap map = ParseNameValueMap(namevalue.toStdString());
             presence->SetFirstName(map["FirstName"]);
             presence->SetLastName(map["LastName"]);
@@ -208,7 +208,7 @@ namespace RexLogic
             owner_->HandleMissingParent(localid);
             owner_->HandleObjectParent(localid);
 
-            msg.SkipToNextInstanceStart();
+            msg->SkipToFirstVariableByName("JointAxisOrAnchor");
         }
         
         return false;
@@ -310,12 +310,13 @@ namespace RexLogic
         }
 
         netpos->Updated();
-        assert(i <= 60);
-    }
 
-    bool Avatar::HandleRexGM_RexAppearance(ProtocolUtilities::NetworkEventInboundData* data)
-    {
-        StringVector params = ProtocolUtilities::ParseGenericMessageParameters(*data->message);
+        assert(i <= 60);                            
+    }
+    
+    bool Avatar::HandleRexGM_RexAppearance(LLInMessage* msg)
+    {        
+        StringVector params = ParseGenericMessageParameters(*msg);
         bool overrideappearance = false;
 
         if (params.size() >= 2)
@@ -337,11 +338,11 @@ namespace RexLogic
 
         return false;
     }
-
-    bool Avatar::HandleRexGM_RexAnim(ProtocolUtilities::NetworkEventInboundData* data)
-    {
-        StringVector params = ProtocolUtilities::ParseGenericMessageParameters(*data->message);
-
+    
+    bool Avatar::HandleRexGM_RexAnim(LLInMessage* msg)
+    {        
+        StringVector params = ParseGenericMessageParameters(*msg);
+        
         if (params.size() < 7)
             return false;
 
@@ -412,18 +413,15 @@ namespace RexLogic
         return false;
     }
    
-    bool Avatar::HandleOSNE_AvatarAnimation(ProtocolUtilities::NetworkEventInboundData* data)
-    {
-        ProtocolUtilities::NetInMessage &msg = *data->message;
-        msg.ResetReading();
-        RexUUID avatarid = msg.ReadUUID();
+    bool Avatar::HandleOSNE_AvatarAnimation(LLInMessage* msg)   
+    {        
      
         std::vector<RexUUID> animations_to_start;
-        size_t animlistcount = msg.ReadCurrentBlockInstanceCount();
+        size_t animlistcount = msg->ReadCurrentBlockInstanceCount();
         for(size_t i = 0; i < animlistcount; i++)
         {
-            RexUUID animid = msg.ReadUUID();
-            s32 animsequence = msg.ReadS32();
+            RexUUID animid = msg->ReadUUID();
+            s32 animsequence = msg->ReadS32();
 
             animations_to_start.push_back(animid);
             
@@ -434,10 +432,9 @@ namespace RexLogic
             }
         }
         
-        size_t animsourcelistcount = msg.ReadCurrentBlockInstanceCount();
+        size_t animsourcelistcount = msg->ReadCurrentBlockInstanceCount();
         for(size_t i = 0; i < animsourcelistcount; i++)
-            RexUUID objectid = msg.ReadUUID();  
-
+            RexUUID objectid = msg->ReadUUID();  
         // PhysicalAvatarEventList not used
 
         StartAvatarAnimations(avatarid, animations_to_start);

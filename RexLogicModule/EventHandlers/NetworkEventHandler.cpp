@@ -78,6 +78,7 @@ NetworkEventHandler::~NetworkEventHandler()
 
 bool NetworkEventHandler::HandleOpenSimNetworkEvent(event_id_t event_id, Foundation::EventDataInterface* data)
 {
+    /*
     PROFILE(NetworkEventHandler_HandleOpenSimNetworkEvent);
     ProtocolUtilities::NetworkEventInboundData *netdata = checked_static_cast<ProtocolUtilities::NetworkEventInboundData *>(data);
 
@@ -201,31 +202,31 @@ bool NetworkEventHandler::HandleOSNE_RegionHandshake(ProtocolUtilities::NetworkE
     std::string sim_name = msg.ReadString(); // SimName
     rexlogicmodule_->GetServerConnection()->SetSimName(sim_name);
 
-    /*msg.SkipToNextVariable(); // SimOwner
-    msg.SkipToNextVariable(); // IsEstateManager
-    msg.SkipToNextVariable(); // WaterHeight
-    msg.SkipToNextVariable(); // BillableFactor
-    msg.SkipToNextVariable(); // CacheID
-    for(int i = 0; i < 4; ++i)
-        msg.SkipToNextVariable(); // TerrainBase0..3
-    RexAssetID terrain[4];
-    // TerrainDetail0-3
-    msg.SkipToNextVariable();
-    msg.SkipToNextVariable();
-    msg.SkipToNextVariable();
-    msg.SkipToNextVariable();
+    //msg.SkipToNextVariable(); // SimOwner
+    //msg.SkipToNextVariable(); // IsEstateManager
+    //msg.SkipToNextVariable(); // WaterHeight
+    //msg.SkipToNextVariable(); // BillableFactor
+    //msg.SkipToNextVariable(); // CacheID
+    //for(int i = 0; i < 4; ++i)
+    //    msg.SkipToNextVariable(); // TerrainBase0..3
+    //RexAssetID terrain[4];
+    //// TerrainDetail0-3
+    //msg.SkipToNextVariable();
+    //msg.SkipToNextVariable();
+    //msg.SkipToNextVariable();
+    //msg.SkipToNextVariable();
 
-    //TerrainStartHeight
-    msg.SkipToNextVariable();
-    msg.SkipToNextVariable();
-    msg.SkipToNextVariable();
-    msg.SkipToNextVariable();
+    ////TerrainStartHeight
+    //msg.SkipToNextVariable();
+    //msg.SkipToNextVariable();
+    //msg.SkipToNextVariable();
+    //msg.SkipToNextVariable();
 
-    // TerrainHeightRange
-    msg.SkipToNextVariable();
-    msg.SkipToNextVariable();
-    msg.SkipToNextVariable();
-    msg.SkipToNextVariable();*/
+    //// TerrainHeightRange
+    //msg.SkipToNextVariable();
+    //msg.SkipToNextVariable();
+    //msg.SkipToNextVariable();
+    //msg.SkipToNextVariable();
 
     RexLogicModule::LogInfo("Joined to sim " + sim_name);
 
@@ -242,6 +243,7 @@ bool NetworkEventHandler::HandleOSNE_RegionHandshake(ProtocolUtilities::NetworkE
 
     const ProtocolUtilities::ClientParameters& client = sp->GetClientParameters();
     rexlogicmodule_->GetServerConnection()->SendRegionHandshakeReplyPacket(client.agentID, client.sessionID, 0);
+    */
     return false;
 }
 

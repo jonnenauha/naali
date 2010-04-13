@@ -14,7 +14,7 @@ namespace Foundation
     class Session
     {
         public:
-            typedef QVariantMap LoginParameters;
+            typedef QMap<QString,QString> LoginParameters;
 
             virtual int Type () const = 0;
             virtual bool IsConnected () const = 0;

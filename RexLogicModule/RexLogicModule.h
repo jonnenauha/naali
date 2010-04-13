@@ -34,13 +34,21 @@ namespace ProtocolUtilities
     class ProtocolModuleInterface;
 }
 
+namespace RexNetworking
+{ 
+    class LLSession;
+    class LLStream;
+}
+
 namespace RexLogic
 {
     class NetworkEventHandler;
+    class NetworkMessageHandler;
     class InputEventHandler;
     class SceneEventHandler;
     class NetworkStateEventHandler;
     class FrameworkEventHandler;
+    class UiLoginHandler;
     class Avatar;
     class AvatarEditor;
     class Primitive;
@@ -92,6 +100,12 @@ namespace RexLogic
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_WorldLogic;
 
         WorldStreamConnectionPtr GetServerConnection() const { return world_stream_; }
+
+        //! accessor to LLUDP session functionality
+        RexNetworking::LLSession *GetLLSession () const { return llsession_; }
+
+        //! accessor to LLUDP stream functionality
+        RexNetworking::LLStream *GetLLStream () const { return llstream_; }
 
         //! switch current input controller, if using avatar controller, switch to camera controller and vice versa
         void SwitchCameraState();
@@ -244,6 +258,7 @@ namespace RexLogic
 
         //! Event handler for network events.
         NetworkEventHandler *network_handler_;
+        NetworkMessageHandler *message_handler_;
 
         //! Event handler for network events.
         InputEventHandler *input_handler_; 
@@ -334,7 +349,14 @@ namespace RexLogic
         //! MainPanel handler
         MainPanelHandler *main_panel_handler_;
 
-        Foundation::Session *session_;
+        //! UiModule event handler
+        UiLoginHandler *ui_login_handler_;
+
+        //! LLSession object
+        RexNetworking::LLSession *llsession_;
+
+        //! LLSession object
+        RexNetworking::LLStream *llstream_;
     };
 }
 

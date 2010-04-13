@@ -67,6 +67,7 @@ namespace RexNetworking
     {
         QString message;
 
+        QString sim_name;
         QString sim_ip;
         int sim_port;
 

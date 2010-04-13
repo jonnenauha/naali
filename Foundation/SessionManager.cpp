@@ -22,28 +22,41 @@ namespace Foundation
         session_handlers_.push_back (handl.release());
     }
 
-    int SessionManager::GetType (const string &type) const
-    {
-        SessionTypeMap::const_iterator s = session_types_.find (type);
-        return (s != session_types_.end())? s-> second : -1;
-    }
-
     int SessionManager::GetType (const Session *session) const
     {
         SessionHandler *owner = get_owner (session);
         return owner-> type;
     }
 
+    int SessionManager::GetType (const string &type) const
+    {
+        SessionTypeMap::const_iterator i = session_types_.find (type);
+        return (i != session_types_.end())? i-> second : -1;
+    }
+
+    SessionHandler *SessionManager::GetHandler (const std::string &type) const
+    {
+        return get_handler (type);
+    }
+
     Session *SessionManager::Login (const Session::LoginParameters &params)
     {
         SessionHandler *accepted = get_accepted (params);
-        return (accepted)? accepted-> Login (params) : 0;
+        Session *session = (accepted)? accepted-> Login (params) : 0;
+
+        if (session) active_.insert (std::make_pair (session-> Type(), session));
+
+        return session;
     }
 
     bool SessionManager::Logout (const Session *session)
     {
         SessionHandler *owner = get_owner (session);
-        return (owner)? owner-> Logout () : false;
+        bool success = (owner)? owner-> Logout () : false;
+
+        if (success) active_.erase (session-> Type());
+
+        return success;
     }
 
     void SessionManager::LogoutAll ()
@@ -53,6 +66,11 @@ namespace Foundation
         for (; i != e; ++i) (*i)-> Logout ();
     }
             
+    const SessionMap &SessionManager::ActiveSessions () const
+    {
+        return active_;
+    }
+
     int SessionManager::get_session_type_id (const string &type)
     {
         using std::make_pair; 
@@ -95,5 +113,23 @@ namespace Foundation
             }
 
         return owner;
+    }
+
+    SessionHandler *SessionManager::get_handler (const std::string &type) const
+    {
+        SessionHandler *handler = 0;
+
+        SessionHandlerList::const_iterator i = session_handlers_.begin();
+        SessionHandlerList::const_iterator e = session_handlers_.end();
+        int t = GetType (type);
+
+        for (; i != e; ++i)
+            if ((*i)-> type == t)
+            {
+                handler = *i;
+                break;
+            }
+                
+        return handler;
     }
 }

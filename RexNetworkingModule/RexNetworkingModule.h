@@ -6,6 +6,10 @@
 #include "ModuleInterface.h"
 #include "ModuleLoggingFunctions.h"
 
+#include "LLSession.h"
+#include "LLStream.h"
+#include "LLMessageManager/LLProtocolMsgIDs.h"
+
 namespace Foundation
 {
     class StreamInterface;

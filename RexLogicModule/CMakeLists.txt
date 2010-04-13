@@ -21,7 +21,8 @@ init_target (RexLogicModule OUTPUT modules/core)
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
-file (GLOB MOC_FILES Avatar/AvatarEditor.h EventHandlers/LoginHandler.h EventHandlers/MainPanelHandler.h
+file (GLOB MOC_FILES Avatar/AvatarEditor.h EventHandlers/LoginHandler.h EventHandlers/MainPanelHandler.h 
+    EventHandlers/UiEventHandler.h
     EntityComponent/EC_*.h Communications/*.h)
 
 # SubFolders to project with filtering

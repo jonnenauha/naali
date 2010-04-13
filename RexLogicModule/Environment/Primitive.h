@@ -15,9 +15,9 @@
 class QColor;
 class QDomDocument;
 
-namespace ProtocolUtilities
+namespace RexNetworking
 {
-    class NetworkEventInboundData;
+    class LLInMessage;
 }
 
 namespace RexLogic
@@ -32,17 +32,26 @@ namespace RexLogic
         Primitive(RexLogicModule *rexlogicmodule);
         ~Primitive();
         
-        bool HandleOSNE_ObjectUpdate(ProtocolUtilities::NetworkEventInboundData* data);
+        bool HandleOSNE_ObjectUpdate(RexNetworking::LLInMessage* msg);
         bool HandleOSNE_KillObject(uint32_t objectid); 
+<<<<<<< HEAD
         bool HandleOSNE_ObjectProperties(ProtocolUtilities::NetworkEventInboundData* data);
 
         bool HandleRexGM_RexMediaUrl(ProtocolUtilities::NetworkEventInboundData* data);
         bool HandleRexGM_RexFreeData(ProtocolUtilities::NetworkEventInboundData* data);
         bool HandleRexGM_RexPrimData(ProtocolUtilities::NetworkEventInboundData* data);
         bool HandleRexGM_RexPrimAnim(ProtocolUtilities::NetworkEventInboundData* data);
+=======
+        bool HandleOSNE_ObjectProperties(RexNetworking::LLInMessage* msg);
+                
+        bool HandleRexGM_RexMediaUrl(RexNetworking::LLInMessage* msg);
+        bool HandleRexGM_RexFreeData(RexNetworking::LLInMessage* msg);
+        bool HandleRexGM_RexPrimData(RexNetworking::LLInMessage* msg);
+        bool HandleRexGM_RexPrimAnim(RexNetworking::LLInMessage* msg);
+>>>>>>> integrate refactor with RexLogic
         
-        bool HandleOSNE_AttachedSound(ProtocolUtilities::NetworkEventInboundData *data);
-        bool HandleOSNE_AttachedSoundGainChange(ProtocolUtilities::NetworkEventInboundData *data);
+        bool HandleOSNE_AttachedSound(RexNetworking::LLInMessage *msg);
+        bool HandleOSNE_AttachedSoundGainChange(RexNetworking::LLInMessage *msg);
 
         void HandleTerseObjectUpdateForPrim_60bytes(const uint8_t* bytes);
 

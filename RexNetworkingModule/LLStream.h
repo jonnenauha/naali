@@ -47,7 +47,8 @@ namespace RexNetworking
 
         public:
 
-            typedef std::tr1::function <void (LLInMessage*)> LLMessageHandler;
+            typedef std::tr1::function <void (LLInMessage*)> MessageHandler;
+            typedef std::map <LLMsgID, MessageHandler> MessageHandlerMap;
 
             //=================================================================
             // Logging
@@ -76,23 +77,27 @@ namespace RexNetworking
             // Handling messages
 
         public:
+
+            //! Assigns message handlers by LLMsgID
+            void SetHandlers (const MessageHandlerMap &map);
+
             //! Receives messages from LLMessageManager
             void OnMessageReceived (LLMsgID id, LLInMessage *msg);
 
-            LLMessageHandler OnRegionHandshake;
-            LLMessageHandler OnAgentMovementComplete;
-            LLMessageHandler OnAvatarAnimation;
-            LLMessageHandler OnGenericMessage;
-            LLMessageHandler OnLogoutReply;
-            LLMessageHandler OnImprovedTerseObjectUpdate;
-            LLMessageHandler OnKillObject;
-            LLMessageHandler OnObjectUpdate;
-            LLMessageHandler OnObjectProperties;
-            LLMessageHandler OnAttachedSound;
-            LLMessageHandler OnAttachedSoundGainChange;
-            LLMessageHandler OnSoundTrigger;
-            LLMessageHandler OnPreloadSound;
-            LLMessageHandler OnScriptDialog;
+            MessageHandler OnRegionHandshake;
+            MessageHandler OnAgentMovementComplete;
+            MessageHandler OnAvatarAnimation;
+            MessageHandler OnGenericMessage;
+            MessageHandler OnLogoutReply;
+            MessageHandler OnImprovedTerseObjectUpdate;
+            MessageHandler OnKillObject;
+            MessageHandler OnObjectUpdate;
+            MessageHandler OnObjectProperties;
+            MessageHandler OnAttachedSound;
+            MessageHandler OnAttachedSoundGainChange;
+            MessageHandler OnSoundTrigger;
+            MessageHandler OnPreloadSound;
+            MessageHandler OnScriptDialog;
             
             //=================================================================
             // Stream control

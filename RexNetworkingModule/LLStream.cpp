@@ -4,7 +4,7 @@
 #include "DebugOperatorNew.h"
 
 #include "LLStream.h"
-#include "LLMessageManager/RexProtocolMsgIDs.h"
+#include "LLMessageManager/LLProtocolMsgIDs.h"
 
 #include "QuatUtils.h"
 #include "ConversionUtils.h"
@@ -113,6 +113,59 @@ namespace RexNetworking
         params_ = params;
     }
     
+    void LLStream::SetHandlers (const MessageHandlerMap &map)
+    {
+        MessageHandlerMap::const_iterator i = map.begin();
+        MessageHandlerMap::const_iterator e = map.end();
+        for (; i != e; ++i)
+        {
+            switch (i-> first)
+            {
+                case RexNetMsgRegionHandshake:
+                    OnRegionHandshake = i-> second; break;
+
+                case RexNetMsgAgentMovementComplete:
+                    OnAgentMovementComplete = i-> second; break;
+
+                case RexNetMsgAvatarAnimation:
+                    OnAvatarAnimation = i-> second; break;
+
+                case RexNetMsgGenericMessage:
+                    OnGenericMessage = i-> second; break;
+
+                case RexNetMsgLogoutReply:
+                    OnLogoutReply = i-> second; break;
+
+                case RexNetMsgImprovedTerseObjectUpdate:
+                    OnImprovedTerseObjectUpdate = i-> second; break;
+
+                case RexNetMsgKillObject:
+                    OnKillObject = i-> second; break;
+
+                case RexNetMsgObjectUpdate:
+                    OnObjectUpdate = i-> second; break;
+
+                case RexNetMsgObjectProperties:
+                    OnObjectProperties = i-> second; break;
+
+                case RexNetMsgAttachedSound:
+                    OnAttachedSound = i-> second; break;
+
+                case RexNetMsgAttachedSoundGainChange:
+                    OnAttachedSoundGainChange = i-> second; break;
+
+                case RexNetMsgSoundTrigger:
+                    OnSoundTrigger = i-> second; break;
+
+                case RexNetMsgPreloadSound:
+                    OnPreloadSound = i-> second; break;
+
+                case RexNetMsgScriptDialog:
+                    OnScriptDialog = i-> second; break;
+            }
+        }
+    }
+
     void LLStream::OnMessageReceived (LLMsgID msg_id, LLInMessage *msg)
     {
         std::cout << "LLStream: received: " << msg_id << std::endl;

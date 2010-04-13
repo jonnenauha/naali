@@ -15,7 +15,7 @@
 
 #include "LLMessageManager.h"
 #include "ZeroCode.h"
-#include "RexProtocolMsgIDs.h"
+#include "LLProtocolMsgIDs.h"
 #include "Profiler.h"
 
 using namespace std;

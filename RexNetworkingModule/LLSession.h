@@ -112,7 +112,8 @@ namespace RexNetworking
             bool Owns (const Foundation::Session *session);
             bool Logout ();
 
-            LLSession *GetSession();
+            Foundation::Session *GetSession();
+            void SetStreamHandlers (const LLStream::MessageHandlerMap &map);
 
         private:
             LLSession   *session_;

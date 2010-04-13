@@ -6,7 +6,6 @@
 #include "Framework.h"
 #include "ConfigurationManager.h"
 #include "SessionManager.h"
-#include "LLSession.h"
 
 #include "RexNetworkingModule.h"
 

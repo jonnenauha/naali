@@ -14,10 +14,12 @@
 #include "CameraControllable.h"
 
 #include "EventHandlers/NetworkEventHandler.h"
+#include "EventHandlers/NetworkMessageHandler.h"
 #include "EventHandlers/NetworkStateEventHandler.h"
 #include "EventHandlers/InputEventHandler.h"
 #include "EventHandlers/SceneEventHandler.h"
 #include "EventHandlers/FrameworkEventHandler.h"
+#include "EventHandlers/UiEventHandler.h"
 #include "EventHandlers/LoginHandler.h"
 #include "EventHandlers/MainPanelHandler.h"
 
@@ -61,6 +63,7 @@
 #include "RexTypes.h"
 
 #include "UiModule.h"
+#include "RexNetworkingModule.h"
 
 #include "EventManager.h"
 #include "ConfigurationManager.h"
@@ -84,7 +87,8 @@ RexLogicModule::RexLogicModule() : ModuleInterfaceImpl(type_static_),
     framework_handler_(0),
     os_login_handler_(0),
     taiga_login_handler_(0),
-    main_panel_handler_(0)
+    main_panel_handler_(0),
+    llsession_(0)
 {
 }
 
@@ -126,6 +130,7 @@ void RexLogicModule::Initialize()
     primitive_ = PrimitivePtr(new Primitive(this));
     world_stream_ = WorldStreamConnectionPtr(new ProtocolUtilities::WorldStream(framework_));
     network_handler_ = new NetworkEventHandler(framework_, this);
+    message_handler_ = new NetworkMessageHandler(framework_, this);
     network_state_handler_ = new NetworkStateEventHandler(framework_, this);
     input_handler_ = new InputEventHandler(framework_, this);
     scene_handler_ = new SceneEventHandler(framework_, this);
@@ -251,7 +256,48 @@ void RexLogicModule::PostInitialize()
         "If add is called and EC already exists for entity, EC's visibility is toggled.",
         Console::Bind(this, &RexLogicModule::ConsoleHighlightTest)));
 
-    session_ = framework_-> GetSessionManager()-> Login (QVariantMap ());
+    //-------------------------------------------------------------------------
+    // Setup handler for UiModule to connect to SessionManager
+    
+    if (ui_module.get())
+    {
+        QObject *notifier = ui_module->GetEtherLoginNotifier();
+        if (notifier) ui_login_handler_ = new UiLoginHandler (framework_-> GetSessionManager(), notifier);
+    }
+
+    //-------------------------------------------------------------------------
+    // Setup protocol-specific handlers
+    
+    using std::make_pair;
+    using std::tr1::bind;
+    
+    // LL Session -------------------------------------------------------------
+    using RexNetworking::LLStream;
+    using RexNetworking::LLSession;
+    using RexNetworking::LLSessionHandler;
+    LLSessionHandler *llhandler;
+
+    llhandler = static_cast <LLSessionHandler *> (framework_-> GetSessionManager()-> GetHandler ("OpenSim/LLUDP"));
+    llsession_ = static_cast <LLSession *> (llhandler-> GetSession());
+    llstream_ = static_cast <LLStream *> (&(llsession_-> GetStream()));
+
+    // LLMessageHandlers
+    LLStream::MessageHandlerMap llmap;
+    llmap.insert (make_pair (RexNetMsgAvatarAnimation, bind (&Avatar::HandleOSNE_AvatarAnimation, avatar_, _1)));
+    llmap.insert (make_pair (RexNetMsgObjectProperties, bind (&Primitive::HandleOSNE_ObjectProperties, primitive_, _1)));
+    llmap.insert (make_pair (RexNetMsgAttachedSound, bind (&Primitive::HandleOSNE_AttachedSound, primitive_, _1)));
+    llmap.insert (make_pair (RexNetMsgAttachedSoundGainChange, bind (&Primitive::HandleOSNE_AttachedSoundGainChange, primitive_, _1)));
+    llmap.insert (make_pair (RexNetMsgRegionHandshake, bind (&NetworkMessageHandler::HandleOSNE_RegionHandshake, message_handler_, _1)));
+    llmap.insert (make_pair (RexNetMsgAgentMovementComplete, bind (&NetworkMessageHandler::HandleOSNE_AgentMovementComplete, message_handler_, _1)));
+    llmap.insert (make_pair (RexNetMsgGenericMessage, bind (&NetworkMessageHandler::HandleOSNE_GenericMessage, message_handler_, _1)));
+    llmap.insert (make_pair (RexNetMsgLogoutReply, bind (&NetworkMessageHandler::HandleOSNE_LogoutReply, message_handler_, _1)));
+    llmap.insert (make_pair (RexNetMsgImprovedTerseObjectUpdate, bind (&NetworkMessageHandler::HandleOSNE_ImprovedTerseObjectUpdate, message_handler_, _1)));
+    llmap.insert (make_pair (RexNetMsgKillObject, bind (&NetworkMessageHandler::HandleOSNE_KillObject, message_handler_, _1)));
+    llmap.insert (make_pair (RexNetMsgObjectUpdate, bind (&NetworkMessageHandler::HandleOSNE_ObjectUpdate, message_handler_, _1)));
+    llmap.insert (make_pair (RexNetMsgSoundTrigger, bind (&NetworkMessageHandler::HandleOSNE_SoundTrigger, message_handler_, _1)));
+    llmap.insert (make_pair (RexNetMsgPreloadSound, bind (&NetworkMessageHandler::HandleOSNE_PreloadSound, message_handler_, _1)));
+    llmap.insert (make_pair (RexNetMsgScriptDialog, bind (&NetworkMessageHandler::HandleOSNE_ScriptDialog, message_handler_, _1)));
+    llhandler-> SetStreamHandlers (llmap);
 }
 
 void RexLogicModule::SubscribeToNetworkEvents(boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> currentProtocolModule)
@@ -411,13 +457,13 @@ void RexLogicModule::Update(f64 frametime)
             UpdateAvatarOverlays();
         }
 
-        std::cout << "!! Session: is ";
-        if (session_ && session_-> IsConnected())
-        {
-            std::cout << "connected" << std::endl;
-        }
-        else
-            std::cout << "not connected" << std::endl;
+        //std::cout << "!! Session: is ";
+        //if (session_ && session_-> IsConnected())
+        //{
+        //    std::cout << "connected" << std::endl;
+        //}
+        //else
+        //    std::cout << "not connected" << std::endl;
     }
 
     RESETPROFILER;

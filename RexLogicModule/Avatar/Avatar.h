@@ -19,6 +19,11 @@
 namespace OgreRenderer
 {
     class EC_OgrePlaceable;
+};
+
+namespace RexNetworking
+{
+    class LLInMessage;
 }
 
 namespace RexLogic
@@ -31,12 +36,12 @@ namespace RexLogic
         Avatar(RexLogicModule *owner);
         ~Avatar();
 
-        bool HandleOSNE_ObjectUpdate(ProtocolUtilities::NetworkEventInboundData* data);
+        bool HandleOSNE_ObjectUpdate(RexNetworking::LLInMessage* msg);
         bool HandleOSNE_KillObject(uint32_t objectid);
-        bool HandleOSNE_AvatarAnimation(ProtocolUtilities::NetworkEventInboundData* data);
+        bool HandleOSNE_AvatarAnimation(RexNetworking::LLInMessage* msg);
 
-        bool HandleRexGM_RexAppearance(ProtocolUtilities::NetworkEventInboundData* data);
-        bool HandleRexGM_RexAnim(ProtocolUtilities::NetworkEventInboundData* data);
+        bool HandleRexGM_RexAppearance(RexNetworking::LLInMessage* msg);
+        bool HandleRexGM_RexAnim(RexNetworking::LLInMessage* msg);
 
         void HandleTerseObjectUpdate_30bytes(const uint8_t* bytes);
         void HandleTerseObjectUpdateForAvatar_60bytes(const uint8_t* bytes);
@@ -110,5 +115,4 @@ namespace RexLogic
         AvatarAppearance avatar_appearance_;
     };
 }
-
 #endif
