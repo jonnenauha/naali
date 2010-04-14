@@ -678,7 +678,8 @@ namespace Input
     void WorldInputLogic::Update (f64 frametime)
     {
         update_dynamic_key_bindings_ ();
-
+#if 0    
+#ifndef Q_WS_MAEMO_5
         if (view_-> scene()-> focusItem())
         {
             if (has_focus_)
@@ -696,6 +697,15 @@ namespace Input
                 post_simulated_focus_click();
             }
         }
+#endif
+#endif
+        if (!has_focus_)
+        {
+            has_focus_ = true;
+            postEvent (new QFocusEvent (QEvent::FocusIn));
+            post_simulated_focus_click();
+        }
+//#endif  
     }
 
     void WorldInputLogic::init_statemachine_ ()

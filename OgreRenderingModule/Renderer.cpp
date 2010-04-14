@@ -22,12 +22,14 @@
 
 #include "QOgreUIView.h"
 #include "QOgreWorldView.h"
+#include "MaemoUiManager.h"
 
 #include <QApplication>
 #include <QDesktopWidget>
 #include <QIcon>
 #include <QVBoxLayout>
 #include <QGraphicsScene>
+#include <QMainWindow>
 #include <QDebug>
 //#include "MemoryLeakCheck.h"
 
@@ -87,13 +89,14 @@ namespace OgreRenderer
         window_title_(window_title),
         main_window_(0),
         q_ogre_ui_view_(0),
+        maemo_ui_manager_(0),
         last_width_(0),
         last_height_(0),
         resized_dirty_(0),
         view_distance_(500.0)
     {
-        InitializeQt();
         InitializeEvents();
+        InitializeQt();
     }
 
     Renderer::~Renderer()
@@ -142,6 +145,8 @@ namespace OgreRenderer
             framework_->GetDefaultConfig().SetSetting("OgreRenderer", "view_distance", view_distance_);
         }
 
+        SAFE_DELETE(maemo_ui_manager_);
+        
         resource_handler_.reset();
         root_.reset();
     }
@@ -157,16 +162,18 @@ namespace OgreRenderer
 
     void Renderer::InitializeQt()
     {
-        main_window_ = new QWidget();
+        main_window_ = new QMainWindow();
         q_ogre_ui_view_ = new QOgreUIView(main_window_);
 
         // Lets disable icon for now, put real one here when one is created for Naali
-        QPixmap pm(16,16);
-        pm.fill(Qt::transparent);
-        main_window_->setWindowIcon(QIcon(pm));
-        main_window_->setLayout(new QVBoxLayout(main_window_));
-        main_window_->layout()->setMargin(0);
-        main_window_->layout()->addWidget(q_ogre_ui_view_);
+        //QPixmap pm(16,16);
+        //pm.fill(Qt::transparent);
+        //main_window_->setWindowIcon(QIcon(pm));
+        //main_window_->setLayout(new QVBoxLayout(main_window_)); // MAEMO
+        //main_window_->layout()->setMargin(0);
+        //main_window_->layout()->addWidget(q_ogre_ui_view_); // MAEMO
+        main_window_->setCentralWidget(q_ogre_ui_view_);
+        q_ogre_ui_view_->show();
 
         // Ownership of uiview passed to framework
         framework_->SetUIView(std::auto_ptr <QGraphicsView> (q_ogre_ui_view_)); 
@@ -179,6 +186,7 @@ namespace OgreRenderer
         event_manager->RegisterEvent(renderercategory_id_, Events::POST_RENDER, "PostRender");
         event_manager->RegisterEvent(renderercategory_id_, Events::WINDOW_CLOSED, "WindowClosed");
         event_manager->RegisterEvent(renderercategory_id_, Events::WINDOW_RESIZED, "WindowResized");
+        event_manager->RegisterEvent(renderercategory_id_, Events::MAEMO_LOGIN_REQUEST, "MaemoConnectRequest");
     }
 
     void Renderer::Initialize()
@@ -217,6 +225,16 @@ namespace OgreRenderer
         if (window_top < 25)
             window_top = 25;
 
+#ifdef Q_WS_MAEMO_5
+        window_left = 0;
+        window_top = 0;
+        width = 800;
+        height = 480;
+        fullscreen = true;
+        maximized = true;
+        OgreRenderingModule::LogInfo("MainWindow paramas initialised for the N900");
+#endif
+
         // Load plugins
         LoadPlugins(plugins_filename_);
 
@@ -232,6 +250,15 @@ namespace OgreRenderer
 
         // Ask Ogre if rendering system is available
         rendersystem = root_->getRenderSystemByName(rendersystem_name);
+
+#ifdef Q_WS_MAEMO_5
+        if (!rendersystem)
+        {
+            rendersystem = root_->getRenderSystemByName("OpenGL ES 1.x Rendering Subsystem");
+            if (rendersystem)
+                OgreRenderingModule::LogInfo("Render System OpenGL ES 1.x Rendering Subsystem loaded");
+        }
+#endif
 
 #ifdef _WINDOWS
         // If windows did not have DirectX fallback to OpenGL
@@ -268,6 +295,8 @@ namespace OgreRenderer
             q_ogre_world_view_ = new QOgreWorldView(renderwindow_);
             q_ogre_ui_view_->SetWorldView(q_ogre_world_view_);
             q_ogre_world_view_->InitializeOverlay(q_ogre_ui_view_->viewport()->width(), q_ogre_ui_view_->viewport()->height());
+            
+            maemo_ui_manager_ = new MaemoUiManager(framework_, main_window_);
         }
         catch (Ogre::Exception &/*e*/)
         {
@@ -306,7 +335,9 @@ namespace OgreRenderer
 
         Ogre::String plugin_dir = file.getSetting("PluginFolder");
         Ogre::StringVector plugins = file.getMultiSetting("Plugin");
-        
+
+        OgreRenderingModule::LogError("Searching from: " + plugin_dir);
+                
         if (plugin_dir.length())
         {
             if ((plugin_dir[plugin_dir.length() - 1] != '\\') && (plugin_dir[plugin_dir.length() - 1] != '/'))
@@ -323,11 +354,13 @@ namespace OgreRenderer
         {
             try
             {
+                OgreRenderingModule::LogError("Trying to load " + plugin_dir + plugins[i] );
                 root_->loadPlugin(plugin_dir + plugins[i]);
+                OgreRenderingModule::LogError(">> Plugin " + plugins[i] + " loaded OK");
             }
             catch (Ogre::Exception e)
             {
-                OgreRenderingModule::LogError("Plugin " + plugins[i] + " failed to load");
+                OgreRenderingModule::LogError(">> Plugin " + plugins[i] + " failed to load");
             }
         }
     }
@@ -424,6 +457,7 @@ namespace OgreRenderer
         if (!initialized_) 
             return;
 
+#ifndef Q_WS_MAEMO_5
         PROFILE(Renderer_Render);
 
         // If rendering into different size window, dirty the UI view for now & next frame
@@ -457,7 +491,7 @@ namespace OgreRenderer
             if (resized_dirty_ > 0)
                 resized_dirty_--;
         }
-        
+#endif
         q_ogre_world_view_->RenderOneFrame();
         q_ogre_ui_view_->setDirty(false);
     }

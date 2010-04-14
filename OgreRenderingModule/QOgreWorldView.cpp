@@ -46,8 +46,11 @@ namespace OgreRenderer
 
         ui_overlay_->add2D(static_cast <Ogre::OverlayContainer *>(ui_overlay_container_));
         ui_overlay_->setZOrder(Ogre::ushort(500));
+#ifndef Q_WS_MAEMO_5
         ui_overlay_->show();
-
+#else
+        ui_overlay_->hide();
+#endif
         ResizeOverlay(width, height);
     }
 

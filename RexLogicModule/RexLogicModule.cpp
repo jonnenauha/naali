@@ -52,6 +52,9 @@
 #include <OgreViewport.h>
 #include <OgreEntity.h>
 
+// MAEMO
+#include <RendererEvents.h>
+
 #include "Avatar/Avatar.h"
 #include "Environment/Primitive.h"
 #include "WorldStream.h"
@@ -424,6 +427,14 @@ bool RexLogicModule::HandleEvent(event_category_id_t category_id, event_id_t eve
             if ((i->second[j])(event_id, data))
                 return true;
         }
+    }
+    
+    event_category_id_t renderercategoryid = framework_->GetEventManager()->QueryEventCategory("Renderer");
+    if (category_id == renderercategoryid && OgreRenderer::Events::MAEMO_LOGIN_REQUEST)
+    {
+        OgreRenderer::Events::MaemoLoginRequest *event_data = dynamic_cast<OgreRenderer::Events::MaemoLoginRequest *>(data);
+        if (event_data)
+            ConnectWithCredentials(event_data->credentials_map);
     }
     return false;
 }
@@ -1182,6 +1193,14 @@ void RexLogicModule::EntityClicked(Scene::Entity* entity)
     boost::shared_ptr<EC_HoveringText> name_tag = entity->GetComponent<EC_HoveringText>();
     if (name_tag.get())
         name_tag->Clicked();
+}
+
+void RexLogicModule::ConnectWithCredentials(QMap<QString, QString> credentials)
+{
+    if (credentials.contains("AuthenticationAddress"))
+        os_login_handler_->ProcessRealXtendLogin(credentials);
+    else
+        os_login_handler_->ProcessOpenSimLogin(credentials);
 }
 
 } // namespace RexLogic

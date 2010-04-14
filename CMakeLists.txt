@@ -22,14 +22,14 @@ include (ConfigurePackages)
 set (CMAKE_CONFIGURATION_TYPES "Release;RelWithDebInfo;Debug" CACHE STRING "Configurations" FORCE)
 
 # Use Caelum, but not Hydrax for now.
-SET (CAELUM 1)
+SET (CAELUM 0)
 SET (HYDRAX 0)
 
 # Possibility to disable console output and make viewer a true Windows application (Windows only)
 SET (WINDOWS_APP 0)
 
 # Set login scene type: 1 = dynamic switchable ether + normal login, 0 = static classical login
-SET (DYNAMIC_LOGIN_SCENE 1)
+SET (DYNAMIC_LOGIN_SCENE 0)
 
 # In Visual Studio, use unicode character set
 if (MSVC)
@@ -59,13 +59,13 @@ file (TO_CMAKE_PATH "$ENV{OGRE_HOME}" ENV_OGRE_HOME)
 configure_boost ()
 configure_poco ()
 configure_qt4 ()
-configure_python ()
-configure_python_qt ()
+#configure_python ()
+#configure_python_qt ()
 configure_ogre ()
 configure_xmlrpc ()
 configure_curl ()
 configure_openjpeg ()
-configure_propertyeditor ()
+#configure_propertyeditor ()
 
 if (CAELUM)
     configure_caelum ()
@@ -106,8 +106,8 @@ add_subdirectory (ProtocolModuleTaiga)
 
 # The following are optional, but contain 
 # commonly used functionality.
-add_subdirectory (InventoryModule)
-add_subdirectory (OgreAssetEditorModule)
+#add_subdirectory (InventoryModule)
+#add_subdirectory (OgreAssetEditorModule)
 
 # Entity components. Note: at the current system if you disable one of these you must
 # comment out the declaration at the responsible module's Load() function.

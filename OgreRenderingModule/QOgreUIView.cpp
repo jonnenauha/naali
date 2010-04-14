@@ -30,6 +30,7 @@ namespace OgreRenderer
 
     void QOgreUIView::Initialize_()
     {
+#ifndef Q_WS_MAEMO_5
         // Setup QGrapchicsView
         setUpdatesEnabled (false);
         setAutoFillBackground (false);
@@ -63,6 +64,20 @@ namespace OgreRenderer
         setAttribute(Qt::WA_PaintOnScreen);
 	    setAttribute(Qt::WA_NoSystemBackground);
         #endif
+#else
+        setAttribute(Qt::WA_PaintOnScreen);
+	    setAttribute(Qt::WA_NoSystemBackground);
+        setAttribute (Qt::WA_OpaquePaintEvent, false);
+	    
+        QPalette empty_background = palette ();
+        empty_background.setColor (QPalette::Window, Qt::transparent); 
+        empty_background.setColor (QPalette::Base, Qt::transparent);
+        setPalette (empty_background);
+        
+        setFocusPolicy (Qt::StrongFocus);
+        setHorizontalScrollBarPolicy (Qt::ScrollBarAlwaysOff);
+        setVerticalScrollBarPolicy (Qt::ScrollBarAlwaysOff);
+#endif
     }
 
     void QOgreUIView::SetWorldView(QOgreWorldView *view) 

@@ -4,6 +4,8 @@
 #define incl_OgreRenderer_RendererEvents_h
 
 #include "EventDataInterface.h"
+#include <QMap>
+#include <QString>
 
 namespace OgreRenderer
 {
@@ -24,6 +26,8 @@ namespace OgreRenderer
         /*! \ingroup OgreRenderingModuleClient
          */
         static const event_id_t WINDOW_RESIZED = 3;
+        
+        static const event_id_t MAEMO_LOGIN_REQUEST = 4;
 
         //! Event data for window resize
         /*! \ingroup OgreRenderingModuleClient
@@ -39,6 +43,15 @@ namespace OgreRenderer
             const int width_;
             //! New height of the window
             const int height_;
+        };
+        
+        class MaemoLoginRequest : public Foundation::EventDataInterface
+        {
+        public:
+            MaemoLoginRequest(QMap<QString,QString> map) : credentials_map(map) {}            
+            virtual ~MaemoLoginRequest() {}
+
+            QMap<QString, QString> credentials_map;
         };
     }
 }

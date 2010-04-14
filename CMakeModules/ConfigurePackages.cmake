@@ -15,7 +15,7 @@ macro (configure_boost)
     if (APPLE)
             set (BOOST_COMPONENTS boost_date_time boost_filesystem boost_system boost_thread boost_program_options boost_unit_test_framework)
     else ()
-            set (BOOST_COMPONENTS date_time filesystem system thread program_options unit_test_framework)
+            set (BOOST_COMPONENTS date_time filesystem system thread program_options)
     endif ()
  
     sagase_configure_package (BOOST 
@@ -58,7 +58,7 @@ endmacro (configure_poco)
 
 macro (configure_qt4)
     sagase_configure_package (QT4 
-        NAMES Qt4 4.6.1
+        NAMES Qt4 4.6.2
         COMPONENTS QtCore QtGui QtWebkit QtScript QtXml QtNetwork QtUiTools
         PREFIXES ${ENV_NAALI_DEP_PATH} ${ENV_QT_DIR})
 
@@ -162,7 +162,7 @@ macro (configure_ogre)
         sagase_configure_package (OGRE 
           NAMES Ogre OgreSDK ogre OGRE
           COMPONENTS Ogre ogre OGRE OgreMain 
-          PREFIXES ${ENV_NAALI_DEP_PATH} ${ENV_OGRE_HOME})
+          PREFIXES ${ENV_NAALI_DEP_PATH} )
     endif ()
 
     sagase_configure_report (OGRE)

@@ -13,8 +13,9 @@ init_target (OgreRenderingModule OUTPUT modules/core)
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
-file (GLOB MOC_FILES QOgreUIView.h RendererSettings.h EC_*.h)
+file (GLOB MOC_FILES QOgreUIView.h RendererSettings.h EC_*.h MaemoUiManager.h)
 #file (GLOB UI_FILES ui/*.ui)
+
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 # Qt4 Moc files to subgroup "CMake Moc"

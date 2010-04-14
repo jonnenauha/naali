@@ -122,6 +122,8 @@ void EC_ChatBubble::RemoveAllMessages()
 
 void EC_ChatBubble::Refresh()
 {
+    return; // MAEMO
+    
     if (renderer_.expired() ||!billboardSet_ || !billboard_)
         return;
 

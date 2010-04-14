@@ -224,6 +224,9 @@ namespace RexLogic
 
         //! Handles a click event for entity, namely showing the name tag
         void EntityClicked(Scene::Entity* entity);
+        
+        //! MAEMO
+        void ConnectWithCredentials(QMap<QString, QString> credentials);
 
     private:
         RexLogicModule(const RexLogicModule &);

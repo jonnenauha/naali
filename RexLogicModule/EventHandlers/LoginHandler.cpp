@@ -27,6 +27,7 @@ namespace RexLogic
         credentials_(0),
         server_entry_point_url_(0)
     {
+        
     }
 
     QUrl AbstractLoginHandler::ValidateServerUrl(QString urlString)
@@ -71,7 +72,7 @@ namespace RexLogic
         delete opensim_world_session_;
         delete realxtend_world_session_;
     }
-
+    
     void OpenSimLoginHandler::SetLoginNotifier(QObject *notifier)
     {
         connect(notifier, SIGNAL( StartOsLogin(QMap<QString, QString>) ), 

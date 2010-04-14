@@ -11,6 +11,7 @@
 #include "CompositionHandler.h"
 
 class QWidget;
+class QMainWindow;
 
 namespace Foundation
 {
@@ -35,6 +36,7 @@ namespace OgreRenderer
     class ResourceHandler;
     class QOgreUIView;
     class QOgreWorldView;
+    class MaemoUiManager;
 
     typedef boost::shared_ptr<Ogre::Root> OgreRootPtr;
     typedef boost::shared_ptr<LogListener> OgreLogListenerPtr;
@@ -275,7 +277,10 @@ namespace OgreRenderer
         StringVector added_resource_directories_;
 
         //! Qt main window widget
-        QWidget *main_window_;
+        QMainWindow *main_window_;
+        
+        //! Maemo Ui manager
+        MaemoUiManager *maemo_ui_manager_;
 
         //! Ogre UI View Widget, inherits QGraphicsView
         QOgreUIView *q_ogre_ui_view_;

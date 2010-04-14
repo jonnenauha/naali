@@ -77,7 +77,9 @@ namespace RexLogic
         void InstantiateWorldSession();
         void SetLoginNotifier(QObject *notifier);
 
+
     public slots:
+        void DebugConnect();
         void ProcessOpenSimLogin(QMap<QString, QString> map);
         void ProcessRealXtendLogin(QMap<QString, QString> map);
 

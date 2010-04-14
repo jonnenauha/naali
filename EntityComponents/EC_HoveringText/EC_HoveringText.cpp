@@ -213,6 +213,8 @@ void EC_HoveringText::ShowMessage(const QString &text)
 
 void EC_HoveringText::Redraw()
 {
+    return; // MAEMO
+    
     if (renderer_.expired() || !billboardSet_ || !billboard_)
         return;
 
