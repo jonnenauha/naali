@@ -9,6 +9,7 @@
 #include "LLSession.h"
 #include "LLStream.h"
 #include "LLMessageManager/LLProtocolMsgIDs.h"
+#include "NetworkEvents.h"
 
 namespace Foundation
 {

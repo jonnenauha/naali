@@ -2,7 +2,8 @@
 #include "StableHeaders.h"
 #include "LLOutMessage.h"
 #include "QuatUtils.h"
-#include "NetworkEvents.h"
+#include "RexUUID.h"
+#include "../NetworkEvents.h"
 
 #include <iostream>
 #include <cstring>

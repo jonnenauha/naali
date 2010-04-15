@@ -31,7 +31,7 @@ add_definitions (-DUSE_QT)
 
 use_package (BOOST)
 use_package (QT4)
-use_modules (Core Foundation Interfaces RexCommon HttpUtilities RpcUtilities)
+use_modules (Core Foundation Interfaces RexCommon HttpUtilities RpcUtilities RexNetworking)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} )
 

@@ -225,8 +225,8 @@ void RexLogicModule::PostInitialize()
 
     // Create login handlers, get login notifier from ether and pass
     // that into rexlogic login handlers for slots/signals setup
-    os_login_handler_ = new OpenSimLoginHandler(framework_, this);
-    taiga_login_handler_ = new TaigaLoginHandler(framework_, this);
+    //os_login_handler_ = new OpenSimLoginHandler(framework_, this);
+    //taiga_login_handler_ = new TaigaLoginHandler(framework_, this);
 
     UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
     if (ui_module.get())
@@ -426,15 +426,26 @@ void RexLogicModule::Update(f64 frametime)
         // update sound listener position/orientation
         UpdateSoundListener();
 
+        if (llstream_-> IsConnected())
+            std::cout << "connected" << std::endl;
+
+        //if (llsession_-> IsConnected() && !llstream_-> IsConnected())
+        //{
+        //    // Send event indicating a succesfull connection
+        //    GetFramework()->GetEventManager()->SendEvent
+        //        (GetFramework()->GetEventManager()->QueryEventCategory("NetworkState"), 
+        //         RexNetworking::Events::EVENT_SERVER_CONNECTED, 0);
+        //}
+        
         //! This is not needed anymore, as ether is the new login ui. If we want to send these world stream states to ui layer,
         //! 
         //ProtocolUtilities::Connection::State present_state = world_stream_->GetConnectionState();
 
         /// \todo Move this to OpenSimProtocolModule.
-        if (!world_stream_->IsConnected() && world_stream_->GetConnectionState() == ProtocolUtilities::Connection::STATE_INIT_UDP)
-        {
-            world_stream_->CreateUdpConnection();
-        }
+        //if (!world_stream_->IsConnected() && world_stream_->GetConnectionState() == ProtocolUtilities::Connection::STATE_INIT_UDP)
+        //{
+        //    world_stream_->CreateUdpConnection();
+        //}
 
         if (send_input_state_)
         {
@@ -448,7 +459,7 @@ void RexLogicModule::Update(f64 frametime)
                 GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_FREECAMERA, 0);
         }
 
-        if (world_stream_->IsConnected())
+        if (llsession_->IsConnected())
         {
             avatar_controllable_->AddTime(frametime);
             camera_controllable_->AddTime(frametime);
@@ -456,14 +467,6 @@ void RexLogicModule::Update(f64 frametime)
             // Update overlays last, after camera update
             UpdateAvatarOverlays();
         }
-
-        //std::cout << "!! Session: is ";
-        //if (session_ && session_-> IsConnected())
-        //{
-        //    std::cout << "connected" << std::endl;
-        //}
-        //else
-        //    std::cout << "not connected" << std::endl;
     }
 
     RESETPROFILER;
@@ -509,6 +512,7 @@ bool RexLogicModule::HandleAssetEvent(event_id_t event_id, Foundation::EventData
 
 void RexLogicModule::LogoutAndDeleteWorld()
 {
+    std::cout << "!!!!! LogoutAndDeleteWorld" << std::endl;
     AboutToDeleteWorld();
 
     world_stream_->RequestLogout();

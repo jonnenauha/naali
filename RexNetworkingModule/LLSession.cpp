@@ -17,7 +17,8 @@
 namespace RexNetworking
 {
     using Foundation::Session;
-    
+   
+
     //=========================================================================
     // pretty printers
     
@@ -153,9 +154,13 @@ namespace RexNetworking
     {
         LLStreamParameters params;
 
-        params.agent_id.FromString (m["agent_id"].toString().toStdString());
-        params.session_id.FromString (m["session_id"].toString().toStdString());
         params.circuit_code = m["circuit_code"].toInt();
+        params.agent_id.FromString (m["agent_id"].toString().toStdString());
+
+        //;if (!m["session_id"].toString().isNull())
+            params.session_id.FromString (m["session_id"].toString().toStdString());
+        //else
+        //    params.session_id.FromString (m["secure_session_id"].toString().toStdString());
 
         return params;
     }
@@ -239,7 +244,7 @@ namespace RexNetworking
         // TODO
         LLLoginParameters params;
         params.first = "d"; params.last = "d"; params.pass = "d";
-        params.service = "http://world.realxtend.org:9000";
+        params.service = "http://home.hulkko.net:9007";
         return params;
     }
 
@@ -288,6 +293,8 @@ namespace RexNetworking
         args["last_exec_event"] = 0;
         args["start"] = "last";
 
+        std::cout << "server: " << qPrintable (params.service.toString()) << std::endl;
+
         // make login call
         XmlRpc::Client client (params.service, http_);
         login_ = client.call ("login_to_simulator", (QVariantList() << args));
@@ -312,6 +319,12 @@ namespace RexNetworking
                 session_-> streamparam_ = parse_stream_params (response);
                 session_-> sessionparam_ = parse_session_params (response);
                 session_-> agentparam_ = parse_agent_params (response);
+
+                // sanity checking
+                if ((session_-> streamparam_.circuit_code == 0) ||
+                    (session_-> streamparam_.session_id.IsNull()) ||
+                    (session_-> streamparam_.agent_id.IsNull()))
+                    std::cout << "session login error: stream parameters incorrect" << std::endl;
 
                 // set up world stream 
                 session_-> stream_.SetParameters (session_-> streamparam_);
