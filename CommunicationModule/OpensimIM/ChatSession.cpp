@@ -8,7 +8,6 @@
 
 #include "ChatSession.h"
 #include "ModuleManager.h"
-#include "WorldStream.h"
 #include "CoreDefines.h"
 #include "CoreException.h"
 #include "Framework.h"

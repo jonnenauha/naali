@@ -392,11 +392,13 @@ namespace RexNetworking
 
     bool LLSession::Login (const LoginParameters &params) 
     { 
+        if (IsConnected()) return false;
         return login_ (parse_login_params (params)); 
     }
 
     bool LLSession::Logout () 
     { 
+        if (!IsConnected()) return false;
         return logout_ (); 
     }
 

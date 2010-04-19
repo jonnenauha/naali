@@ -85,6 +85,7 @@ namespace RexNetworking
             void OnMessageReceived (LLMsgID id, LLInMessage *msg);
 
             MessageHandler OnRegionHandshake;
+            MessageHandler OnRegionInfo;
             MessageHandler OnAgentMovementComplete;
             MessageHandler OnAvatarAnimation;
             MessageHandler OnGenericMessage;
@@ -98,7 +99,15 @@ namespace RexNetworking
             MessageHandler OnSoundTrigger;
             MessageHandler OnPreloadSound;
             MessageHandler OnScriptDialog;
-            
+            MessageHandler OnImageData;
+            MessageHandler OnImagePacket;
+            MessageHandler OnImageNotInDatabase;
+            MessageHandler OnTransferInfo;
+            MessageHandler OnTransferPacket;
+            MessageHandler OnTransferAbort;
+            MessageHandler OnLayerData;
+            MessageHandler OnSimulatorViewerTimeMessage;
+
             //=================================================================
             // Stream control
 
@@ -115,8 +124,14 @@ namespace RexNetworking
             /// Process LLMessageManager
             virtual void Pump ();
 
-            /// Set require stream parameters
+            /// Set required stream parameters
             void SetParameters (const LLStreamParameters &params);
+
+            /// Get stream parameters
+            LLStreamParameters GetParameters ();
+
+            /// Get LLMessageManager
+            LLMessageManager *GetMessageManager();
 
             //=================================================================
             // Sending messages

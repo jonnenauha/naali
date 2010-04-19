@@ -15,11 +15,6 @@ namespace Foundation
     class Framework;
 }
 
-namespace ProtocolUtilities
-{
-    class ProtocolModuleInterface;
-}
-
 namespace Asset
 {
     class AssetManager;
@@ -51,7 +46,7 @@ namespace Asset
             event_id_t event_id, 
             Foundation::EventDataInterface* data);
 
-        virtual void SubscribeToNetworkEvents(boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> currentProtocolModule);
+        virtual void SubscribeToNetworkEvents();
         void UnsubscribeNetworkEvents();
 
         MODULE_LOGGING_FUNCTIONS
@@ -85,9 +80,6 @@ namespace Asset
 
         //! framework id for internal events
         event_category_id_t framework_category_id_;
-
-        //! Pointer to current ProtocolModule
-        boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> protocolModule_;
     };
 }
 

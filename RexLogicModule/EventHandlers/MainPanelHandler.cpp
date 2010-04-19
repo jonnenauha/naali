@@ -5,7 +5,7 @@
 #include "ModuleManager.h"
 
 #include "Framework.h"
-#include "WorldStream.h"
+#include "LLSession.h"
 
 #include <boost/shared_ptr.hpp>
 
@@ -45,7 +45,7 @@ namespace RexLogic
 
     void MainPanelHandler::QuitRequested()
     {
-        if (rex_logic_module_->GetServerConnection()->IsConnected())
+        if (rex_logic_module_->GetLLSession()->IsConnected())
             rex_logic_module_->LogoutAndDeleteWorld();
         framework_->Exit();
     }

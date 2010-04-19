@@ -90,7 +90,7 @@ namespace RexNetworking
         LLBlockVariable 
     };
 
-    /// LLwork messages consist of message blocks. This structure describes a single block.
+    /// Network messages consist of message blocks. This structure describes a single block.
     /// \ingroup OpenSimProtocolClient
     struct LLMessageBlock
     {

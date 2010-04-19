@@ -31,10 +31,10 @@ private:
     LLMessageList(const LLMessageList &);
     void operator=(const LLMessageList &);
 
-    typedef boost::unordered_map<LLMsgID, LLMessageInfo> LLworkMessageMap;
+    typedef boost::unordered_map<LLMsgID, LLMessageInfo> LLMessageMap;
 
     /// Contains all the messages known by this list.
-    LLworkMessageMap messages;
+    LLMessageMap messages;
 
     /// Reads in new messages from the given file.
     void ParseMessageListFromFile(const char *filename);

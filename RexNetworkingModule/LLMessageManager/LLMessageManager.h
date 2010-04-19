@@ -38,6 +38,9 @@ namespace RexNetworking
         /// Disconnets from the current server.
         void Disconnect();
 
+        /// If connected to a server.
+        bool IsConnected();
+
         /// To start building a new outbound message, call this.
         /// @return An empty message holder where the message can be built.
         LLOutMessage *StartNewMessage(LLMsgID msgId);
@@ -152,6 +155,9 @@ namespace RexNetworking
         
         /// A set of received messages' sequence numbers.
         std::set<uint32_t> receivedSequenceNumbers;
+
+        /// Connection status
+        bool connected;
     };
 
 }

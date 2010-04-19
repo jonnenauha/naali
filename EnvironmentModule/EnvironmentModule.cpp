@@ -25,6 +25,7 @@
 #include "ModuleManager.h"
 #include "EventManager.h"
 #include "RexNetworkUtils.h"
+#include "RexNetworkingModule.h"
 
 namespace Environment
 {
@@ -106,7 +107,6 @@ namespace Environment
         environment_.reset();
         sky_.reset();
         event_manager_.reset();
-        currentWorldStream_.reset();
 
         waiting_for_regioninfomessage_ = false;
     }
@@ -204,9 +204,9 @@ namespace Environment
             }
             case Foundation::WORLD_STREAM_READY:
             {
-                ProtocolUtilities::WorldStreamReadyEvent *event_data = dynamic_cast<ProtocolUtilities::WorldStreamReadyEvent *>(data);
+                RexNetworking::LLStreamReadyEvent *event_data = dynamic_cast<RexNetworking::LLStreamReadyEvent *>(data);
                 if (event_data)
-                    currentWorldStream_ = event_data->WorldStream;
+                    currentWorldStream_ = event_data->stream;
 
                 return false;
             }
@@ -410,45 +410,44 @@ namespace Environment
         return false;
     }
 
-    bool EnvironmentModule::HandleOSNE_RegionHandshake(ProtocolUtilities::NetworkEventInboundData* data)
+    bool EnvironmentModule::HandleOSNE_RegionHandshake(RexNetworking::LLInMessage *msg)
     {
-        ProtocolUtilities::NetInMessage &msg = *data->message;
-        msg.ResetReading();
+        msg->ResetReading();
 
-        msg.SkipToNextVariable(); // RegionFlags U32
-        msg.SkipToNextVariable(); // SimAccess U8
-        msg.SkipToNextVariable(); // SimName
-        msg.SkipToNextVariable(); // SimOwner
-        msg.SkipToNextVariable(); // IsEstateManager
+        msg->SkipToNextVariable(); // RegionFlags U32
+        msg->SkipToNextVariable(); // SimAccess U8
+        msg->SkipToNextVariable(); // SimName
+        msg->SkipToNextVariable(); // SimOwner
+        msg->SkipToNextVariable(); // IsEstateManager
 
         // Water height.
-        Real water_height = msg.ReadF32();
+        Real water_height = msg->ReadF32();
         if(water_.get())
             water_->SetWaterHeight(water_height);
 
-        msg.SkipToNextVariable(); // BillableFactor
-        msg.SkipToNextVariable(); // CacheID
+        msg->SkipToNextVariable(); // BillableFactor
+        msg->SkipToNextVariable(); // CacheID
         for(int i = 0; i < 4; ++i)
             msg.SkipToNextVariable(); // TerrainBase0..3
 
         // Terrain texture id
         RexAssetID terrain[4];
-        terrain[0] = msg.ReadUUID().ToString();
-        terrain[1] = msg.ReadUUID().ToString();
-        terrain[2] = msg.ReadUUID().ToString();
-        terrain[3] = msg.ReadUUID().ToString();
+        terrain[0] = msg->ReadUUID().ToString();
+        terrain[1] = msg->ReadUUID().ToString();
+        terrain[2] = msg->ReadUUID().ToString();
+        terrain[3] = msg->ReadUUID().ToString();
 
         Real TerrainStartHeights[4];
-        TerrainStartHeights[0] = msg.ReadF32();
-        TerrainStartHeights[1] = msg.ReadF32();
-        TerrainStartHeights[2] = msg.ReadF32();
-        TerrainStartHeights[3] = msg.ReadF32();
+        TerrainStartHeights[0] = msg->ReadF32();
+        TerrainStartHeights[1] = msg->ReadF32();
+        TerrainStartHeights[2] = msg->ReadF32();
+        TerrainStartHeights[3] = msg->ReadF32();
 
         Real TerrainStartRanges[4];
-        TerrainStartRanges[0] = msg.ReadF32();
-        TerrainStartRanges[1] = msg.ReadF32();
-        TerrainStartRanges[2] = msg.ReadF32();
-        TerrainStartRanges[3] = msg.ReadF32();
+        TerrainStartRanges[0] = msg->ReadF32();
+        TerrainStartRanges[1] = msg->ReadF32();
+        TerrainStartRanges[2] = msg->ReadF32();
+        TerrainStartRanges[3] = msg->ReadF32();
 
         if(terrain_.get())
         {

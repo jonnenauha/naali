@@ -38,11 +38,11 @@ use_package (OGRE)
 use_package (QT4)
 use_package (PYTHON)
 use_package (PYTHON_QT)
-use_modules (Core Foundation Interfaces RexCommon ProtocolUtilities UiModule HttpUtilities AssetModule)
+use_modules (Core Foundation Interfaces RexCommon RexNetworkingModule UiModule HttpUtilities AssetModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${RESOURCE_SRCS})
 
-link_modules (Core Foundation Interfaces RexCommon ProtocolUtilities UiModule HttpUtilities)
+link_modules (Core Foundation Interfaces RexCommon RexNetworkingModule UiModule HttpUtilities)
 link_package (BOOST)
 link_package (POCO)
 link_package (CURL)

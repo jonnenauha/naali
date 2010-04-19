@@ -18,6 +18,7 @@
 #include "ModuleManager.h"
 #include "ServiceManager.h"
 #include "Communications/ScriptDialogHandler.h"
+#include "Communications/ScriptDialogRequest.h"
 // Ogre renderer -specific.
 #include <OgreMaterialManager.h>
 

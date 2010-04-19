@@ -53,7 +53,6 @@ rexlogic_->GetInventory()->GetFirstChildFolderByName("Trash");
 #include "PythonEngine.h" //is this needed here?
 
 #include "RexLogicModule.h" //much of the api is here
-#include "WorldStream.h" //for SendObjectAddPacket
 #include "NetworkEvents.h"
 #include "RealXtend/RexProtocolMsgIDs.h"
 #include "InputEvents.h" //handling input events

@@ -5,9 +5,8 @@
 #include <memory>
 #include <iostream>
 
+#include "RexNetworkingModule.h"
 #include "NetworkEvents.h"
-#include "RealXtend/RexProtocolMsgIDs.h"
-#include "ProtocolModuleOpenSim.h"
 #include "AssetEvents.h"
 #include "AssetManager.h"
 #include "AssetModule.h"
@@ -20,7 +19,6 @@
 #include "ServiceManager.h"
 #include "ConfigurationManager.h"
 
-using namespace OpenSimProtocol;
 using namespace RexTypes;
 
 namespace Asset

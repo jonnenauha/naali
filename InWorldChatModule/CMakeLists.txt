@@ -30,12 +30,12 @@ use_package (QT4)
 use_package (CURL)
 use_package (XMLRPC)
 use_package (OGRE)
-use_modules (Core Foundation Interfaces SceneManager RexCommon ProtocolUtilities UiModule
+use_modules (Core Foundation Interfaces SceneManager RexCommon RexNetworkingModule UiModule
     EntityComponents/EC_ChatBubble EntityComponents/EC_Billboard RexLogicModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${RESOURCE_SRCS})
 
-link_modules (Core Foundation Interfaces SceneManager RexCommon ProtocolUtilities UiModule
+link_modules (Core Foundation Interfaces SceneManager RexCommon RexNetworkingModule UiModule
     EC_ChatBubble EC_Billboard RexLogicModule)
 link_package (BOOST)
 link_package (POCO)

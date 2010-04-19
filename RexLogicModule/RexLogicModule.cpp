@@ -13,14 +13,12 @@
 #include "Avatar/AvatarControllable.h"
 #include "CameraControllable.h"
 
-#include "EventHandlers/NetworkEventHandler.h"
 #include "EventHandlers/NetworkMessageHandler.h"
 #include "EventHandlers/NetworkStateEventHandler.h"
 #include "EventHandlers/InputEventHandler.h"
 #include "EventHandlers/SceneEventHandler.h"
 #include "EventHandlers/FrameworkEventHandler.h"
 #include "EventHandlers/UiEventHandler.h"
-#include "EventHandlers/LoginHandler.h"
 #include "EventHandlers/MainPanelHandler.h"
 
 #include "EntityComponent/EC_FreeData.h"
@@ -57,7 +55,6 @@
 
 #include "Avatar/Avatar.h"
 #include "Environment/Primitive.h"
-#include "WorldStream.h"
 
 #include "Avatar/AvatarEditor.h"
 #include "RexTypes.h"
@@ -76,6 +73,17 @@
 namespace RexLogic
 {
 
+enum 
+{
+    REXLOGIC_NULL,
+    REXLOGIC_INITIALIZED,
+    REXLOGIC_UNCONNECTED,
+    REXLOGIC_CONNECTED,
+    REXLOGIC_DISCONNECTED,
+    REXLOGIC_SHUTTING_DOWN
+};
+
+
 RexLogicModule::RexLogicModule() : ModuleInterfaceImpl(type_static_),
     send_input_state_(false),
     movement_damping_constant_(10.0f),
@@ -85,10 +93,9 @@ RexLogicModule::RexLogicModule() : ModuleInterfaceImpl(type_static_),
     scene_handler_(0),
     network_state_handler_(0),
     framework_handler_(0),
-    os_login_handler_(0),
-    taiga_login_handler_(0),
     main_panel_handler_(0),
-    llsession_(0)
+    llsession_(0),
+    local_state_ (REXLOGIC_NULL)
 {
 }
 
@@ -128,13 +135,11 @@ void RexLogicModule::Initialize()
     avatar_ = AvatarPtr(new Avatar(this));
     avatar_editor_ = AvatarEditorPtr(new AvatarEditor(this));
     primitive_ = PrimitivePtr(new Primitive(this));
-    world_stream_ = WorldStreamConnectionPtr(new ProtocolUtilities::WorldStream(framework_));
-    network_handler_ = new NetworkEventHandler(framework_, this);
     message_handler_ = new NetworkMessageHandler(framework_, this);
     network_state_handler_ = new NetworkStateEventHandler(framework_, this);
     input_handler_ = new InputEventHandler(framework_, this);
     scene_handler_ = new SceneEventHandler(framework_, this);
-    framework_handler_ = new FrameworkEventHandler(world_stream_.get(), framework_, this);
+    framework_handler_ = new FrameworkEventHandler(llstream_, framework_, this);
     avatar_controllable_ = AvatarControllablePtr(new AvatarControllable(this));
     camera_controllable_ = CameraControllablePtr(new CameraControllable(framework_));
     main_panel_handler_ = new MainPanelHandler(framework_, this);
@@ -147,6 +152,8 @@ void RexLogicModule::Initialize()
 
     camera_state_ = static_cast<CameraState>(framework_->GetDefaultConfig().DeclareSetting(
         "RexLogicModule", "default_camera_state", static_cast<int>(CS_Follow)));
+
+    local_state_ = REXLOGIC_INITIALIZED;
 }
 
 // virtual
@@ -223,22 +230,6 @@ void RexLogicModule::PostInitialize()
 
     send_input_state_ = true;
 
-    // Create login handlers, get login notifier from ether and pass
-    // that into rexlogic login handlers for slots/signals setup
-    //os_login_handler_ = new OpenSimLoginHandler(framework_, this);
-    //taiga_login_handler_ = new TaigaLoginHandler(framework_, this);
-
-    UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
-    if (ui_module.get())
-    {
-        QObject *notifier = ui_module->GetEtherLoginNotifier();
-        if (notifier)
-        {
-            os_login_handler_->SetLoginNotifier(notifier);
-            taiga_login_handler_->SetLoginNotifier(notifier);
-        }
-    }
-
     RegisterConsoleCommand(Console::CreateCommand("Login", 
         "Login to server. Usage: Login(user=Test User, passwd=test, server=localhost",
         Console::Bind(this, &RexLogicModule::ConsoleLogin)));
@@ -259,6 +250,7 @@ void RexLogicModule::PostInitialize()
     //-------------------------------------------------------------------------
     // Setup handler for UiModule to connect to SessionManager
     
+    UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
     if (ui_module.get())
     {
         QObject *notifier = ui_module->GetEtherLoginNotifier();
@@ -298,9 +290,11 @@ void RexLogicModule::PostInitialize()
     llmap.insert (make_pair (RexNetMsgPreloadSound, bind (&NetworkMessageHandler::HandleOSNE_PreloadSound, message_handler_, _1)));
     llmap.insert (make_pair (RexNetMsgScriptDialog, bind (&NetworkMessageHandler::HandleOSNE_ScriptDialog, message_handler_, _1)));
     llhandler-> SetStreamHandlers (llmap);
+
+    local_state_ = REXLOGIC_UNCONNECTED;
 }
 
-void RexLogicModule::SubscribeToNetworkEvents(boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> currentProtocolModule)
+void RexLogicModule::SubscribeToNetworkEvents()
 {
     // NetworkState events
     LogicEventHandlerMap::iterator i;
@@ -321,25 +315,6 @@ void RexLogicModule::SubscribeToNetworkEvents(boost::weak_ptr<ProtocolUtilities:
     }
     else
         LogError("Unable to find event category for NetworkState");
-
-    // NetworkIn events
-    eventcategoryid = framework_->GetEventManager()->QueryEventCategory("NetworkIn");
-    if (eventcategoryid != 0)
-    {
-        i = event_handlers_.find(eventcategoryid);
-        if (i == event_handlers_.end())
-        {
-            event_handlers_[eventcategoryid].push_back(boost::bind(
-                &NetworkEventHandler::HandleOpenSimNetworkEvent, network_handler_, _1, _2));
-            LogInfo("System " + Name() + " subscribed to network events [NetworkIn]");
-        }
-        else
-        {
-            LogInfo("System " + Name() + " had already added [NetworkIn] event to LogicEventHandlerMap");
-        }
-    }
-    else
-        LogError("Unable to find event category for NetworkIn");
 }
 
 void RexLogicModule::DeleteScene(const std::string &name)
@@ -360,10 +335,9 @@ void RexLogicModule::DeleteScene(const std::string &name)
 // virtual
 void RexLogicModule::Uninitialize()
 {
-    if (world_stream_->IsConnected())
+    if (llstream_->IsConnected())
         LogoutAndDeleteWorld();
 
-    world_stream_.reset();
     avatar_.reset();
     avatar_editor_.reset();
     primitive_.reset();
@@ -372,13 +346,10 @@ void RexLogicModule::Uninitialize()
 
     event_handlers_.clear();
 
-    SAFE_DELETE(network_handler_);
     SAFE_DELETE(input_handler_);
     SAFE_DELETE(scene_handler_);
     SAFE_DELETE(network_state_handler_);
     SAFE_DELETE(framework_handler_);
-    SAFE_DELETE(os_login_handler_);
-    SAFE_DELETE(taiga_login_handler_);
     SAFE_DELETE(main_panel_handler_);
 }
 
@@ -426,27 +397,16 @@ void RexLogicModule::Update(f64 frametime)
         // update sound listener position/orientation
         UpdateSoundListener();
 
-        if (llstream_-> IsConnected())
-            std::cout << "connected" << std::endl;
+        if (local_state_ == REXLOGIC_UNCONNECTED && llsession_->IsConnected() && llstream_->IsConnected())
+        {
+            local_state_ = REXLOGIC_CONNECTED;
 
-        //if (llsession_-> IsConnected() && !llstream_-> IsConnected())
-        //{
-        //    // Send event indicating a succesfull connection
-        //    GetFramework()->GetEventManager()->SendEvent
-        //        (GetFramework()->GetEventManager()->QueryEventCategory("NetworkState"), 
-        //         RexNetworking::Events::EVENT_SERVER_CONNECTED, 0);
-        //}
+            // Send event indicating a succesfull connection
+            GetFramework()->GetEventManager()->SendEvent
+                (GetFramework()->GetEventManager()->QueryEventCategory("NetworkState"), 
+                 RexNetworking::Events::EVENT_SERVER_CONNECTED, 0);
+        }
         
-        //! This is not needed anymore, as ether is the new login ui. If we want to send these world stream states to ui layer,
-        //! 
-        //ProtocolUtilities::Connection::State present_state = world_stream_->GetConnectionState();
-
-        /// \todo Move this to OpenSimProtocolModule.
-        //if (!world_stream_->IsConnected() && world_stream_->GetConnectionState() == ProtocolUtilities::Connection::STATE_INIT_UDP)
-        //{
-        //    world_stream_->CreateUdpConnection();
-        //}
-
         if (send_input_state_)
         {
             send_input_state_ = false;
@@ -475,6 +435,8 @@ void RexLogicModule::Update(f64 frametime)
 // virtual
 bool RexLogicModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
 {
+    std::cout << "RexLogic Event CENTRAL: " << GetFramework()->GetEventManager()->QueryEventCategoryName(category_id) << " " << event_id << std::endl;
+
     PROFILE(RexLogicModule_HandleEvent);
     LogicEventHandlerMap::iterator i = event_handlers_.find(category_id);
     if (i != event_handlers_.end())
@@ -515,8 +477,9 @@ void RexLogicModule::LogoutAndDeleteWorld()
     std::cout << "!!!!! LogoutAndDeleteWorld" << std::endl;
     AboutToDeleteWorld();
 
-    world_stream_->RequestLogout();
-    world_stream_->ForceServerDisconnect(); // Because the current server doesn't send a logoutreplypacket.
+    llstream_->SendLogoutRequestPacket();
+    llsession_->Logout();
+    // TODO: SendEvent DISCONNECT
 
     if (avatar_)
         avatar_->HandleLogout();
@@ -684,7 +647,7 @@ Console::CommandResult RexLogicModule::ConsoleLogin(const StringVector &params)
 
 Console::CommandResult RexLogicModule::ConsoleLogout(const StringVector &params)
 {
-    if (world_stream_->IsConnected())
+    if (GetLLSession()->IsConnected())
     {
         LogoutAndDeleteWorld();
         return Console::ResultSuccess();
@@ -697,16 +660,6 @@ Console::CommandResult RexLogicModule::ConsoleLogout(const StringVector &params)
 
 void RexLogicModule::StartLoginOpensim(QString qfirstAndLast, QString qpassword, QString qserverAddressWithPort)
 {
-    if (!qserverAddressWithPort.startsWith("http://"))
-        qserverAddressWithPort = "http://" + qserverAddressWithPort;
-
-    QMap<QString, QString> map;
-    map["AuthType"] = "OpenSim";
-    map["Username"] = qfirstAndLast;
-    map["Password"] = qpassword;
-    map["WorldAddress"] = qserverAddressWithPort;
-
-    os_login_handler_->ProcessOpenSimLogin(map);
 }
 
 Console::CommandResult RexLogicModule::ConsoleToggleFlyMode(const StringVector &params)
@@ -790,11 +743,6 @@ AvatarEditorPtr RexLogicModule::GetAvatarEditor() const
 PrimitivePtr RexLogicModule::GetPrimitiveHandler() const
 {
     return primitive_;
-}
-
-InventoryPtr RexLogicModule::GetInventory() const
-{
-    return world_stream_->GetInfo().inventory;
 }
 
 void RexLogicModule::SetCurrentActiveScene(Scene::ScenePtr scene)

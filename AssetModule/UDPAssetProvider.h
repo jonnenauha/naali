@@ -6,6 +6,13 @@
 #include "UDPAssetTransfer.h"
 #include "AssetProviderInterface.h"
 
+namespace RexNetworking
+{
+    class LLInMessage;
+    class LLMessageManager;
+    class LLStream;
+}
+
 namespace Asset
 {
     //! UDP asset provider
@@ -64,17 +71,13 @@ namespace Asset
         //! Returns information about current asset transfers
         virtual Foundation::AssetTransferInfoVector GetTransferInfo();
         
-        virtual void SetCurrentProtocolModule(boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> protocolModule);
+        //! Connects to LLStream
+        virtual void SetStream(RexNetworking::LLStream *stream);
 
         //! Performs time-based update 
         /*! \param frametime Seconds since last frame
          */
         virtual void Update(f64 frametime);
-
-        //! Handles incoming network packet event
-        /*! \return true if event handled
-         */
-        bool HandleNetworkEvent(Foundation::EventDataInterface* data);
 
         /// Clears all transfers.
         void ClearAllTransfers();
@@ -94,19 +97,19 @@ namespace Asset
         //! Sends pending UDP asset requests
         /*! \param net Connected network interface
          */
-        void SendPendingRequests(boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface> net);
+        void SendPendingRequests();
 
         //! Handles texture timeouts
         /*! \param net Connected network interface
             \param frametime Time since last frame
          */
-        void HandleTextureTimeouts(boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface> net, f64 frametime);
+        void HandleTextureTimeouts(f64 frametime);
 
         //! Handles other asset timeouts
         /*! \param net Connected network interface
             \param frametime Time since last frame
          */
-        void HandleAssetTimeouts(boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface> net, f64 frametime);
+        void HandleAssetTimeouts(f64 frametime);
 
         //! Makes current transfers into pending requests & clears transfers.
         /*! Called when connection lost.
@@ -119,32 +122,32 @@ namespace Asset
         //! Handles texture header message
         /*! \param msg Message
          */
-        void HandleTextureHeader(ProtocolUtilities::NetInMessage* msg);
+        void HandleTextureHeader(RexNetworking::LLInMessage* msg);
 
         //! Handles texture data message
         /*! \param msg Message
          */
-        void HandleTextureData(ProtocolUtilities::NetInMessage* msg);
+        void HandleTextureData(RexNetworking::LLInMessage* msg);
 
         //! Handles texture transfer abort message
         /*! \param msg Message
          */
-        void HandleTextureCancel(ProtocolUtilities::NetInMessage* msg);
+        void HandleTextureCancel(RexNetworking::LLInMessage* msg);
 
         //! Handles other asset transfer header message
         /*! \param msg Message
          */
-        void HandleAssetHeader(ProtocolUtilities::NetInMessage* msg);
+        void HandleAssetHeader(RexNetworking::LLInMessage* msg);
         
         //! Handles other asset transfer data message
         /*! \param msg Message
          */
-        void HandleAssetData(ProtocolUtilities::NetInMessage* msg);
+        void HandleAssetData(RexNetworking::LLInMessage* msg);
 
         //! Handles other asset transfer abort message
         /*! \param msg Message
          */
-        void HandleAssetCancel(ProtocolUtilities::NetInMessage* msg);
+        void HandleAssetCancel(RexNetworking::LLInMessage* msg);
 
        //! Gets asset transfer if it's in progress
         /*! \param asset_id Asset ID
@@ -157,16 +160,14 @@ namespace Asset
             \param asset_id Asset UUID
             \param tags Asset request tag(s)
          */
-        void RequestTexture(boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface> net,
-            const RexUUID& asset_id, const RequestTagVector& tags);
+        void RequestTexture(const RexUUID& asset_id, const RequestTagVector& tags);
 
         //! Requests an other asset from network
         /*! \param net Connected network interface
             \param asset_id Asset UUID
             \param tags Asset request tag(s)
          */
-        void RequestOtherAsset(boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface> net,
-            const RexUUID& asset_id, uint asset_type, const RequestTagVector& tags);
+        void RequestOtherAsset(const RexUUID& asset_id, uint asset_type, const RequestTagVector& tags);
 
         //! Sends progress event of asset transfer
         /*! \param transfer Asset transfer
@@ -202,8 +203,11 @@ namespace Asset
         typedef std::vector<AssetRequest> AssetRequestVector;
         AssetRequestVector pending_requests_;
 
-        //! Current Protocol Module
-        boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> protocolModule_;
+        //! Stream interface
+        RexNetworking::LLStream *stream_;
+
+        //! For building raw packets
+        RexNetworking::LLMessageManager *msgmgr_;
     };
 }
 

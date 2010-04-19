@@ -15,7 +15,7 @@
 #include <QStringList>
 
 namespace OgreRenderer      { class QOgreUIView; }
-namespace ProtocolUtilities { class WorldStream; }
+namespace RexNetworking     { class LLStream; }
 
 namespace UiServices
 {
@@ -97,7 +97,7 @@ namespace UiServices
         Ether::Logic::EtherLogic *ether_logic_;
 
         //! Current World Stream pointer
-        boost::shared_ptr<ProtocolUtilities::WorldStream> current_world_stream_;
+        RexNetworking::LLStream *current_world_stream_;
 
     };
 }

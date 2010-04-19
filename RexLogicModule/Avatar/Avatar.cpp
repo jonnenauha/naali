@@ -19,7 +19,6 @@
 #include "SceneEvents.h"
 #include "EventManager.h"
 #include "ModuleManager.h"
-#include "WorldStream.h"
 #include "EC_OgreMesh.h"
 #include "EC_OgrePlaceable.h"
 #include "EC_OgreMovableTextOverlay.h"
@@ -27,11 +26,13 @@
 #include "EC_HoveringText.h"
 #include "ConversionUtils.h"
 #include "RexNetworkUtils.h"
-#include "GenericMessageUtils.h"
-#include "NetworkEvents.h"
+#include "RexNetworkingModule.h"
+#include "LLMessageManager/GenericMessageUtils.h"
 
 namespace RexLogic
 {
+    using namespace RexNetworking;
+
     Avatar::Avatar(RexLogicModule *owner) : avatar_appearance_(owner), owner_(owner)
     {
         avatar_states_[RexUUID("6ed24bd8-91aa-4b12-ccc7-c97c857ab4e0")] = EC_OpenSimAvatar::Walk;
@@ -140,7 +141,7 @@ namespace RexLogic
             }
 
             msg->SkipToFirstVariableByName("ParentID");
-            presence->ParentId = msg->ReadU32();
+            presence->parentId = msg->ReadU32();
 
             // NameValue contains: "FirstName STRING RW SV <firstName>\nLastName STRING RW SV <lastName>"
             // When using rex auth <firstName> contains both first and last name and <lastName> contains the auth server address
@@ -152,7 +153,7 @@ namespace RexLogic
             ///@note If using reX auth map["RexAuth"] contains the username and authentication address.
 
             // Hide own name overlay
-            if (presence->agentId == owner_->GetServerConnection()->GetInfo().agentID)
+            if (presence->agentId == owner_->GetLLStream()->GetParameters().agent_id)
             {
                 EC_HoveringText *overlay= entity->GetComponent<EC_HoveringText>().get();
                 if (overlay)
@@ -166,7 +167,7 @@ namespace RexLogic
             // This also causes a EVENT_CONTROLLABLE_ENTITY to be passed which will register this Entity as the currently 
             // controlled avatar entity. -jj.
             ///\todo Perhaps this logic could be done beforehand when creating the avatar Entity instead of doing it here? -jj.
-            if (presence->agentId == owner_->GetServerConnection()->GetInfo().agentID &&
+            if (presence->agentId == owner_->GetLLStream()->GetParameters().agent_id &&
                 !entity->GetComponent(EC_Controllable::TypeNameStatic()))
             {
                 Foundation::Framework *fw = owner_->GetFramework();
@@ -181,7 +182,7 @@ namespace RexLogic
                 EC_OpenSimAvatar* avatar = entity->GetComponent<EC_OpenSimAvatar>().get();
                 if (avatar->GetAppearanceAddress().empty())
                 {
-                    std::string avataraddress = owner_->GetServerConnection()->GetInfo().avatarStorageUrl;
+                    std::string avataraddress;// TODO = owner_->GetLLSession()->GetInfo().avatarStorageUrl;
                     if (!avataraddress.empty())
                     {
                         avatar->SetAppearanceAddress(avataraddress,false);
@@ -195,7 +196,7 @@ namespace RexLogic
             }
 
             // Send event notifying about new user in the world
-            if (presence->agentId != owner_->GetServerConnection()->GetInfo().agentID)
+            if (presence->agentId != owner_->GetLLStream()->GetParameters().agent_id)
             {
                 Foundation::EventManagerPtr eventMgr = owner_->GetFramework()->GetEventManager();
                 ProtocolUtilities::UserConnectivityEvent event_data(presence->agentId);
@@ -397,7 +398,7 @@ namespace RexLogic
         if (presence)
         {
             fullid = presence->agentId;
-            if (fullid != owner_->GetServerConnection()->GetInfo().agentID)
+            if (fullid != owner_->GetLLStream()->GetParameters().agent_id)
             {
                 // Send event notifying about user leaving the world
                 Foundation::EventManagerPtr eventMgr = owner_->GetFramework()->GetEventManager();
@@ -414,7 +415,9 @@ namespace RexLogic
     }
    
     bool Avatar::HandleOSNE_AvatarAnimation(LLInMessage* msg)   
-    {        
+    {
+        msg->ResetReading();
+        RexUUID avatarid = msg->ReadUUID();
      
         std::vector<RexUUID> animations_to_start;
         size_t animlistcount = msg->ReadCurrentBlockInstanceCount();
@@ -434,7 +437,8 @@ namespace RexLogic
         
         size_t animsourcelistcount = msg->ReadCurrentBlockInstanceCount();
         for(size_t i = 0; i < animsourcelistcount; i++)
-            RexUUID objectid = msg->ReadUUID();  
+            RexUUID objectid = msg->ReadUUID();
+
         // PhysicalAvatarEventList not used
 
         StartAvatarAnimations(avatarid, animations_to_start);
@@ -644,7 +648,7 @@ namespace RexLogic
     
     Scene::EntityPtr Avatar::GetUserAvatar()
     {
-        RexUUID agent_id = owner_->GetServerConnection()->GetInfo().agentID;
+        RexUUID agent_id = owner_->GetLLStream()->GetParameters().agent_id;
         Scene::EntityPtr entity = owner_->GetAvatarEntity(agent_id);
         return entity;
     }
@@ -654,13 +658,14 @@ namespace RexLogic
         Scene::EntityPtr entity = GetUserAvatar();
         if (!entity)
             return false;
-        WorldStreamConnectionPtr conn = owner_->GetServerConnection();
+
+        RexNetworking::LLStream *conn = owner_->GetLLStream();
         if (!conn)
             return false;
         
-        // For now, support only legacy storage export
-        return (conn->GetConnectionType() == ProtocolUtilities::AuthenticationConnection);
-    }
+        // TODO: this is not correct
+        return true;
+    }                            
 
     void Avatar::ExportUserAvatar()
     {
@@ -672,7 +677,7 @@ namespace RexLogic
         }
         
         // See whether to use legacy storage or inventory
-        WorldStreamConnectionPtr conn = owner_->GetServerConnection();
+        RexNetworking::LLStream *conn = owner_->GetLLStream();
         if (!conn)
         {
             RexLogicModule::LogError("Not connected to server, cannot export avatar");
@@ -685,10 +690,11 @@ namespace RexLogic
             return;
         }
         
-        if (conn->GetConnectionType() == ProtocolUtilities::AuthenticationConnection)
-            avatar_appearance_.ExportAvatar(entity, conn->GetUsername(), conn->GetAuthAddress(), conn->GetPassword());
-        else
-            avatar_appearance_.InventoryExportAvatar(entity);
+        // TODO
+        //if (conn->GetConnectionType() == ProtocolUtilities::AuthenticationConnection)
+        //    avatar_appearance_.ExportAvatar(entity, conn->GetUsername(), conn->GetAuthAddress(), conn->GetPassword());
+        //else
+        //    avatar_appearance_.InventoryExportAvatar(entity);
     }
 
     void Avatar::ReloadUserAvatar()

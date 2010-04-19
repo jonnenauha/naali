@@ -19,8 +19,49 @@ namespace RexNetworking
     const std::string LL_MESSAGE_TEMPLATE_FILE = "./data/message_template.msg";
     extern Real LL_THROTTLE_MAX_BPS;
 
-    struct NullConnectHandler { void operator()(){} };
-    struct NullLLMessageHandler { void operator()(LLInMessage *){} };
+    using Foundation::Stream;
+
+    struct PropagatingConnectHandler
+    {
+        typedef std::vector <Stream::ConnectionHandler> ConnectHandlerList;
+        ConnectHandlerList propagation;
+
+        // call operator
+        void operator() ()
+        {
+            ConnectHandlerList::iterator i = propagation.begin();
+            ConnectHandlerList::iterator e = propagation.end();
+
+            for (; i != e; ++i) (*i) ();
+        }
+
+        // append operator
+        void operator+= (const Stream::ConnectionHandler &h)
+        {
+            propagation.push_back (h);
+        }
+    };
+
+    struct PropagatingMessageHandler
+    {
+        typedef std::vector <LLStream::MessageHandler> MessageHandlerList;
+        MessageHandlerList propagation;
+        
+        // call operator
+        void operator() (LLInMessage *m)
+        {
+            MessageHandlerList::iterator i = propagation.begin();
+            MessageHandlerList::iterator e = propagation.end();
+
+            for (; i != e; ++i) (*i) (m);
+        }
+
+        // append operator
+        void operator+= (const LLStream::MessageHandler &h)
+        {
+            propagation.push_back (h);
+        }
+    };
 
     LLStream::LLStream () : 
         messagemgr_ (new LLMessageManager (LL_MESSAGE_TEMPLATE_FILE.c_str())),
@@ -43,22 +84,32 @@ namespace RexNetworking
     {
         LogInfo("LLStream created and ready.");
         
-        OnConnect                   = NullConnectHandler();
-        OnDisconnect                = NullConnectHandler();
-        OnRegionHandshake           = NullLLMessageHandler();
-        OnAgentMovementComplete     = NullLLMessageHandler();
-        OnAvatarAnimation           = NullLLMessageHandler();
-        OnGenericMessage            = NullLLMessageHandler();
-        OnLogoutReply               = NullLLMessageHandler();
-        OnImprovedTerseObjectUpdate = NullLLMessageHandler();
-        OnKillObject                = NullLLMessageHandler();
-        OnObjectUpdate              = NullLLMessageHandler();
-        OnObjectProperties          = NullLLMessageHandler();
-        OnAttachedSound             = NullLLMessageHandler();
-        OnAttachedSoundGainChange   = NullLLMessageHandler();
-        OnSoundTrigger              = NullLLMessageHandler();
-        OnPreloadSound              = NullLLMessageHandler();
-        OnScriptDialog              = NullLLMessageHandler();
+        OnConnect       = PropagatingConnectHandler();
+        OnDisconnect    = PropagatingConnectHandler();
+
+        OnRegionHandshake               = PropagatingMessageHandler();
+        OnRegionInfo                    = PropagatingMessageHandler();
+        OnAgentMovementComplete         = PropagatingMessageHandler();
+        OnAvatarAnimation               = PropagatingMessageHandler();
+        OnGenericMessage                = PropagatingMessageHandler();
+        OnLogoutReply                   = PropagatingMessageHandler();
+        OnImprovedTerseObjectUpdate     = PropagatingMessageHandler();
+        OnKillObject                    = PropagatingMessageHandler();
+        OnObjectUpdate                  = PropagatingMessageHandler();
+        OnObjectProperties              = PropagatingMessageHandler();
+        OnAttachedSound                 = PropagatingMessageHandler();
+        OnAttachedSoundGainChange       = PropagatingMessageHandler();
+        OnSoundTrigger                  = PropagatingMessageHandler();
+        OnPreloadSound                  = PropagatingMessageHandler();
+        OnScriptDialog                  = PropagatingMessageHandler();
+        OnImageData                     = PropagatingMessageHandler();
+        OnImagePacket                   = PropagatingMessageHandler();
+        OnImageNotInDatabase            = PropagatingMessageHandler();
+        OnTransferInfo                  = PropagatingMessageHandler();
+        OnTransferPacket                = PropagatingMessageHandler();
+        OnTransferAbort                 = PropagatingMessageHandler();
+        OnLayerData                     = PropagatingMessageHandler();
+        OnSimulatorViewerTimeMessage    = PropagatingMessageHandler();
     }
 
     LLStream::~LLStream()
@@ -112,6 +163,16 @@ namespace RexNetworking
     {
         params_ = params;
     }
+            
+    LLStreamParameters LLStream::GetParameters ()
+    {
+        return params_;
+    }
+            
+    LLMessageManager *LLStream::GetMessageManager()
+    {
+        return messagemgr_;
+    }
     
     void LLStream::SetHandlers (const MessageHandlerMap &map)
     {
@@ -122,46 +183,244 @@ namespace RexNetworking
             switch (i-> first)
             {
                 case RexNetMsgRegionHandshake:
-                    OnRegionHandshake = i-> second; break;
+                    {
+                        PropagatingMessageHandler *h = OnRegionHandshake.target 
+                            <PropagatingMessageHandler> ();
+
+                        if (h) (*h) += i-> second;
+                        else 
+                            OnRegionHandshake = i-> second;
+
+                        break;
+                    }
 
                 case RexNetMsgAgentMovementComplete:
-                    OnAgentMovementComplete = i-> second; break;
+                    {
+                        PropagatingMessageHandler *h = OnAgentMovementComplete.target
+                            <PropagatingMessageHandler> ();
+
+                        if (h) (*h) += i-> second; 
+                        else
+                            OnAgentMovementComplete = i-> second;
+
+                        break;
+                    }
 
                 case RexNetMsgAvatarAnimation:
-                    OnAvatarAnimation = i-> second; break;
+                    {
+                        PropagatingMessageHandler *h = OnAvatarAnimation.target
+                            <PropagatingMessageHandler> ();
+
+                        if (h) (*h) += i-> second; 
+                        else
+                            OnAvatarAnimation = i-> second;
+
+                        break;
+                    }
 
                 case RexNetMsgGenericMessage:
-                    OnGenericMessage = i-> second; break;
+                    {
+                        PropagatingMessageHandler *h = OnGenericMessage.target
+                            <PropagatingMessageHandler> ();
+
+                        if (h) (*h) += i-> second; 
+                        else
+                            OnGenericMessage = i-> second;
+
+                        break;
+                    }
 
                 case RexNetMsgLogoutReply:
-                    OnLogoutReply = i-> second; break;
+                    {
+                        PropagatingMessageHandler *h = OnLogoutReply.target
+                            <PropagatingMessageHandler> ();
+
+                        if (h) (*h) += i-> second; 
+                        else
+                            OnLogoutReply = i-> second;
+
+                        break;
+                    }
 
                 case RexNetMsgImprovedTerseObjectUpdate:
-                    OnImprovedTerseObjectUpdate = i-> second; break;
+                    {
+                        PropagatingMessageHandler *h = OnImprovedTerseObjectUpdate.target
+                            <PropagatingMessageHandler> ();
+
+                        if (h) (*h) += i-> second; 
+                        else
+                            OnImprovedTerseObjectUpdate = i-> second;
+
+                        break;
+                    }
 
                 case RexNetMsgKillObject:
-                    OnKillObject = i-> second; break;
+                    {
+                        PropagatingMessageHandler *h = OnKillObject.target
+                            <PropagatingMessageHandler> ();
+
+                        if (h) (*h) += i-> second; 
+                        else
+                            OnKillObject = i-> second;
+
+                        break;
+                    }
 
                 case RexNetMsgObjectUpdate:
-                    OnObjectUpdate = i-> second; break;
+                    {
+                        PropagatingMessageHandler *h = OnObjectUpdate.target
+                            <PropagatingMessageHandler> ();
+
+                        if (h) (*h) += i-> second; 
+                        else
+                            OnObjectUpdate = i-> second;
+
+                        break;
+                    }
 
                 case RexNetMsgObjectProperties:
-                    OnObjectProperties = i-> second; break;
+                    {
+                        PropagatingMessageHandler *h = OnObjectProperties.target
+                            <PropagatingMessageHandler> ();
+
+                        if (h) (*h) += i-> second; 
+                        else
+                            OnObjectProperties = i-> second;
+
+                        break;
+                    }
 
                 case RexNetMsgAttachedSound:
-                    OnAttachedSound = i-> second; break;
+                    {
+                        PropagatingMessageHandler *h = OnAttachedSound.target
+                            <PropagatingMessageHandler> ();
+
+                        if (h) (*h) += i-> second; 
+                        else
+                            OnAttachedSound = i-> second;
+
+                        break;
+                    }
 
                 case RexNetMsgAttachedSoundGainChange:
-                    OnAttachedSoundGainChange = i-> second; break;
+                    {
+                        PropagatingMessageHandler *h = OnAttachedSoundGainChange.target
+                            <PropagatingMessageHandler> ();
+
+                        if (h) (*h) += i-> second; 
+                        else
+                            OnAttachedSoundGainChange = i-> second;
+
+                        break;
+                    }
 
                 case RexNetMsgSoundTrigger:
-                    OnSoundTrigger = i-> second; break;
+                    {
+                        PropagatingMessageHandler *h = OnSoundTrigger.target
+                            <PropagatingMessageHandler> ();
+
+                        if (h) (*h) += i-> second; 
+                        else
+                            OnSoundTrigger = i-> second;
+
+                        break;
+                    }
 
                 case RexNetMsgPreloadSound:
-                    OnPreloadSound = i-> second; break;
+                    {
+                        PropagatingMessageHandler *h = OnPreloadSound.target
+                            <PropagatingMessageHandler> ();
+
+                        if (h) (*h) += i-> second; 
+                        else
+                            OnPreloadSound = i-> second;
+
+                        break;
+                    }
 
                 case RexNetMsgScriptDialog:
-                    OnScriptDialog = i-> second; break;
+                    {
+                        PropagatingMessageHandler *h = OnScriptDialog.target
+                            <PropagatingMessageHandler> ();
+
+                        if (h) (*h) += i-> second; 
+                        else
+                            OnScriptDialog = i-> second;
+
+                        break;
+                    }
+
+                case RexNetMsgImageData:
+                    {
+                        PropagatingMessageHandler *h = OnImageData.target
+                            <PropagatingMessageHandler> ();
+
+                        if (h) (*h) += i-> second; 
+                        else
+                            OnImageData = i-> second;
+
+                        break;
+                    }
+
+                case RexNetMsgImagePacket:
+                    {
+                        PropagatingMessageHandler *h = OnImagePacket.target
+                            <PropagatingMessageHandler> ();
+
+                        if (h) (*h) += i-> second; 
+                        else
+                            OnImagePacket = i-> second;
+
+                        break;
+                    }
+
+                case RexNetMsgImageNotInDatabase:
+                    {
+                        PropagatingMessageHandler *h = OnImageNotInDatabase.target
+                            <PropagatingMessageHandler> ();
+
+                        if (h) (*h) += i-> second; 
+                        else
+                            OnImageNotInDatabase = i-> second;
+
+                        break;
+                    }
+
+                case RexNetMsgTransferInfo:
+                    {
+                        PropagatingMessageHandler *h = OnTransferInfo.target
+                            <PropagatingMessageHandler> ();
+
+                        if (h) (*h) += i-> second; 
+                        else
+                            OnTransferInfo = i-> second;
+
+                        break;
+                    }
+
+                case RexNetMsgTransferPacket:
+                    {
+                        PropagatingMessageHandler *h = OnTransferPacket.target
+                            <PropagatingMessageHandler> ();
+
+                        if (h) (*h) += i-> second; 
+                        else
+                            OnTransferPacket = i-> second;
+
+                        break;
+                    }
+
+                case RexNetMsgTransferAbort:
+                    {
+                        PropagatingMessageHandler *h = OnTransferAbort.target
+                            <PropagatingMessageHandler> ();
+
+                        if (h) (*h) += i-> second; 
+                        else
+                            OnTransferAbort = i-> second;
+
+                        break;
+                    }
             }
         }
     }

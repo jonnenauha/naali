@@ -23,7 +23,7 @@ use_package (CURL)
 use_package (XMLRPC)
 
 use_modules (Core Foundation Interfaces SceneManager UiModule RexCommon OgreRenderingModule
-    ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga SupportModules RexLogicModule)
+    RexNetworkingModule SupportModules RexLogicModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
@@ -35,7 +35,7 @@ link_package (CURL)
 link_package (XMLRPC)
 
 link_modules (Core Foundation Interfaces SceneManager UiModule RexCommon OgreRenderingModule
-    ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga SupportModules RexLogicModule)
+    RexNetworkingModule SupportModules RexLogicModule)
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})

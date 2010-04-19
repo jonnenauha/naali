@@ -17,6 +17,7 @@ file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
 file (GLOB MOC_FILES LLSession.h LLStream.h Capabilities.h XmlRpc.h)
 
+AddSourceFolder (OpenSim)
 AddSourceFolder (LLMessageManager)
 #AddSourceFolder (LLInventory)
 
@@ -31,7 +32,7 @@ add_definitions (-DUSE_QT)
 
 use_package (BOOST)
 use_package (QT4)
-use_modules (Core Foundation Interfaces RexCommon HttpUtilities RpcUtilities RexNetworking)
+use_modules (Core Foundation Interfaces RexCommon HttpUtilities RpcUtilities RexNetworkingModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} )
 

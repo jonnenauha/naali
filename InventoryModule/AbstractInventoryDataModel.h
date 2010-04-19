@@ -10,7 +10,6 @@
 #define incl_InventoryModule_AbstractInventoryDataModel_h
 
 #include "AbstractInventoryItem.h"
-#include "WorldStream.h"
 
 #include <QObject>
 

@@ -6,10 +6,11 @@
 #include "ModuleInterface.h"
 #include "ModuleLoggingFunctions.h"
 
+#include "NetworkEvents.h"
 #include "LLSession.h"
 #include "LLStream.h"
+#include "LLMessageManager/LLMessageManager.h"
 #include "LLMessageManager/LLProtocolMsgIDs.h"
-#include "NetworkEvents.h"
 
 namespace Foundation
 {
@@ -34,6 +35,7 @@ namespace RexNetworking
             virtual ~RexNetworkingModule();
 
             virtual void Initialize();
+            virtual void PostInitialize();
             virtual void Uninitialize();
             virtual void Update(f64 frametime);
 
@@ -51,6 +53,7 @@ namespace RexNetworking
 
         private:
             SessionList active_;
+            int local_state_;
     };
 
     /// @}

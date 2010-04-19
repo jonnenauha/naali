@@ -18,7 +18,7 @@ use_modules (Core Foundation Interfaces RexCommon AssetModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES})
 
-link_modules (Core Foundation Interfaces  RexCommon)
+link_modules (Core Foundation Interfaces RexCommon)
 link_package (BOOST)
 link_package (POCO)
 link_package (OPENJPEG)

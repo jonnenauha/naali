@@ -13,7 +13,7 @@
 #include "InputServiceInterface.h"
 #include "EventManager.h"
 #include "ConfigurationManager.h"
-#include "WorldStream.h"
+#include "RexNetworkingModule.h"
 
 using namespace RexTypes;
 
@@ -60,7 +60,7 @@ namespace RexLogic
 
     AvatarControllable::AvatarControllable(RexLogicModule *rexlogic) : 
         framework_(rexlogic->GetFramework())
-      , connection_(rexlogic->GetServerConnection())
+      , connection_(rexlogic->GetLLStream())
       , event_manager_(rexlogic->GetFramework()->GetEventManager())
       , rexlogic_(rexlogic)
       , net_dirty_(false)

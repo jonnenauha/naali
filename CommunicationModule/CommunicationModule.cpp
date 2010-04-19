@@ -12,7 +12,6 @@
 #include "TelepathyIM/ConnectionProvider.h"
 #include "EventManager.h"
 #include "ModuleManager.h"
-#include "WorldStream.h"
 #include "Interfaces/ProtocolModuleInterface.h"
 
 #include <RexLogicModule.h>

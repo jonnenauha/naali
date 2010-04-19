@@ -11,11 +11,17 @@
 #include "EnvironmentModuleApi.h"
 #include "ModuleInterface.h"
 #include "ModuleLoggingFunctions.h"
-#include "WorldStream.h"
+#include "RexTypes.h"
 
 namespace Foundation
 {
     class EventDataInterface;
+}
+
+namespace RexNetworking
+{
+    class LLStream;
+    class LLInMessage;
 }
 
 namespace Environment
@@ -83,7 +89,8 @@ namespace Environment
         //! Get terrain texture ids, terrain height and water height values.
         //! @param network data pointer.
         //! @return Should return true if the event was handled and is not to be propagated further
-        bool HandleOSNE_RegionHandshake(ProtocolUtilities::NetworkEventInboundData* data);
+        // TODO
+        bool HandleOSNE_RegionHandshake(RexNetworking::LLInMessage* msg);
 
         //! @return The terrain handler object that manages reX terrain logic.
         TerrainPtr GetTerrainHandler() const;
@@ -187,8 +194,8 @@ namespace Environment
         //! PostProcess dialog pointer
         PostProcessWidget *postprocess_dialog_;
 
-        //! WorldStream will handle those network messages that we are wishing to send.
-        ProtocolUtilities::WorldStreamPtr currentWorldStream_;
+        //! LLStream will handle those network messages that we are wishing to send.
+        RexNetworking::LLStream *currentWorldStream_;
 
         //! Wait for new terrain heightmap information.
         bool waiting_for_regioninfomessage_;

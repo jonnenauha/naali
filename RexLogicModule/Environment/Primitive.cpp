@@ -38,7 +38,6 @@
 #include "LLMessageManager/GenericMessageUtils.h"
 #include "EventManager.h"
 #include "ServiceManager.h"
-#include "WorldStream.h"
 #include "EC_HoveringText.h"
 
 #include <OgreSceneNode.h>
@@ -542,7 +541,7 @@ void Primitive::SendRexPrimData(entity_id_t entityid)
 
     buffer.resize(idx);
 
-    WorldStreamConnectionPtr conn = rexlogicmodule_->GetServerConnection();
+    LLStream *conn = rexlogicmodule_->GetLLStream();
     if (!conn)
         return;
     StringVector strings;
@@ -602,7 +601,7 @@ void Primitive::SendRexFreeData(entity_id_t entityid)
     if (!free)
         return;
 
-    WorldStreamConnectionPtr conn = rexlogicmodule_->GetServerConnection();
+    LLStream *conn = rexlogicmodule_->GetLLStream();
     if (!conn)
         return;
 

@@ -11,7 +11,6 @@
 #include "NetworkMessages/NetInMessage.h"
 #include "NetworkMessages/NetMessageManager.h"
 #include "AssetServiceInterface.h"
-#include "WorldStream.h"
 
 #include <utility>
 

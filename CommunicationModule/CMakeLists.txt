@@ -83,7 +83,7 @@ use_package (TELEPATHY_GLIB)
 use_package (TELEPATHY_FARSIGHT)
 use_package (GSTREAMER)
 use_package (FARSIGHT2)
-use_modules (CommunicationModule Core Foundation SceneManager Interfaces RexCommon UiModule RexLogicModule ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga OgreRenderingModule)
+use_modules (CommunicationModule Core Foundation SceneManager Interfaces RexCommon UiModule RexLogicModule RexNetworkingModule OgreRenderingModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 

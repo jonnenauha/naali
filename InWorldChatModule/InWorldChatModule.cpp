@@ -15,7 +15,6 @@
 #include "EC_Billboard.h"
 
 #include "ConsoleCommandServiceInterface.h"
-#include "WorldStream.h"
 #include "SceneManager.h"
 #include "EventManager.h"
 #include "ModuleManager.h"
@@ -104,9 +103,9 @@ bool InWorldChatModule::HandleEvent(event_category_id_t category_id, event_id_t 
 
         if(event_id == Foundation::WORLD_STREAM_READY)
         {
-            ProtocolUtilities::WorldStreamReadyEvent *event_data = checked_static_cast<ProtocolUtilities::WorldStreamReadyEvent *>(data);
+            RexNetworking::LLStreamReadyEvent *event_data = checked_static_cast<RexNetworking::LLStreamReadyEvent *>(data);
             if (event_data)
-                currentWorldStream_ = event_data->WorldStream;
+                currentWorldStream_ = event_data->stream;
 
             networkInEventCategory_ = framework_->GetEventManager()->QueryEventCategory("NetworkIn");
             if (networkInEventCategory_ == 0)

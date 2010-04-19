@@ -10,7 +10,6 @@
 #include "EventManager.h"
 #include "ConfigurationManager.h"
 #include "Framework.h"
-#include "WorldStream.h"
 
 #include "Ether/EtherLogic.h"
 #include "Ether/View/EtherScene.h"
@@ -32,6 +31,7 @@
 #include "SceneEvents.h"
 #include "ConsoleEvents.h"
 #include "InputEvents.h"
+#include "LLStream.h"
 
 #include <QApplication>
 #include <QDir>
@@ -142,9 +142,9 @@ namespace UiServices
                 }
                 case Foundation::WORLD_STREAM_READY:
                 {
-                    ProtocolUtilities::WorldStreamReadyEvent *event_data = dynamic_cast<ProtocolUtilities::WorldStreamReadyEvent *>(data);
+                    RexNetworking::LLStreamReadyEvent *event_data = dynamic_cast<RexNetworking::LLStreamReadyEvent *>(data);
                     if (event_data)
-                        current_world_stream_ = event_data->WorldStream;
+                        current_world_stream_ = event_data->stream;
                     break;
                 }
                 default:
@@ -155,17 +155,17 @@ namespace UiServices
         {
             switch (event_id)
             {
-                case ProtocolUtilities::Events::EVENT_CONNECTION_FAILED:
+                case RexNetworking::Events::EVENT_CONNECTION_FAILED:
                 {
                     PublishConnectionState(UiDefines::Failed);
                     break;
                 }
-                case ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED:
+                case RexNetworking::Events::EVENT_SERVER_DISCONNECTED:
                 {
                     PublishConnectionState(UiDefines::Disconnected);
                     break;
                 }
-                case ProtocolUtilities::Events::EVENT_SERVER_CONNECTED:
+                case RexNetworking::Events::EVENT_SERVER_CONNECTED:
                 {
                     // Udp connection has been established, we are still loading object so lets not change UI layer yet
                     // to connected state. See Scene categorys EVENT_CONTROLLABLE_ENTITY case for real UI switch.
@@ -245,12 +245,13 @@ namespace UiServices
                 inworld_notification_manager_->SetConnectionState(connection_state);
 
                 // Send welcome message to notification manager
-                if (current_world_stream_.get())
+                if (current_world_stream_)
                 {
-                    QString sim = QString::fromStdString(current_world_stream_->GetSimName());
-                    QString username = QString::fromStdString(current_world_stream_->GetUsername());
-                    if (!sim.isEmpty() && !username.isEmpty())
-                        GetNotificationManager()->ShowNotification(new MessageNotification("Welcome to " + sim + " " + username, 10000));
+                    // TODO
+                    //QString sim = QString::fromStdString(current_world_stream_->GetSimName());
+                    //QString username = QString::fromStdString(current_world_stream_->GetUsername());
+                    //if (!sim.isEmpty() && !username.isEmpty())
+                    //    GetNotificationManager()->ShowNotification(new MessageNotification("Welcome to " + sim + " " + username, 10000));
                 }
                 break;
             }

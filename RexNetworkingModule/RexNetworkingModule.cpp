@@ -5,6 +5,7 @@
 
 #include "Framework.h"
 #include "ConfigurationManager.h"
+#include "EventManager.h"
 #include "SessionManager.h"
 
 #include "RexNetworkingModule.h"
@@ -12,10 +13,19 @@
 
 namespace RexNetworking
 {
+    enum
+    {
+        REXNETWORKING_NULL,
+        REXNETWORKING_INITIALIZED,
+        REXNETWORKING_EVENTS_REGISTERED
+    };
+
     Real LL_THROTTLE_MAX_BPS;
 
     RexNetworkingModule::RexNetworkingModule()		
-        : ModuleInterfaceImpl(Foundation::Module::MT_Networking)
+        : ModuleInterfaceImpl(Foundation::Module::MT_Networking),
+        local_state_ (REXNETWORKING_NULL)
+
     {
     }
 
@@ -39,14 +49,30 @@ namespace RexNetworking
 
         // Get valid session objects so streams can be pumped
         active_.push_back (llhandler-> GetSession());
+
+        local_state_ = REXNETWORKING_INITIALIZED;
     }
 
-    void RexNetworkingModule::Uninitialize()
+    void RexNetworkingModule::PostInitialize()
     {
     }
 
     void RexNetworkingModule::Update(f64 frametime)
     {
+        if (local_state_ == REXNETWORKING_INITIALIZED)
+        {
+            // Register event categories.
+            GetFramework()->GetEventManager()->RegisterEventCategory("NetworkState");
+
+            // Send event that other modules can query above
+            GetFramework()->GetEventManager()->SendEvent
+                (GetFramework()->GetEventManager()->QueryEventCategory("Framework"), Foundation::NETWORKING_REGISTERED, 0);
+
+            LogInfo("Network events [NetworkState] registered");
+
+            local_state_ = REXNETWORKING_EVENTS_REGISTERED;
+        }
+
         Foundation::Session *session;
         SessionList::iterator i (active_.begin());
         SessionList::iterator e (active_.end());
@@ -57,6 +83,11 @@ namespace RexNetworking
                 session-> GetStream().Pump();
         }
     }
+    
+    void RexNetworkingModule::Uninitialize()
+    {
+    }
+
 }
 
 

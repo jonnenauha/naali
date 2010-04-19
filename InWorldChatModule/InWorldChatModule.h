@@ -126,7 +126,7 @@ namespace Naali
         event_category_id_t frameworkEventCategory_;
 
         /// WorldStream pointer
-        ProtocolUtilities::WorldStreamPtr currentWorldStream_ ;
+        RexNetworking::LLStream *currentWorldStream_ ;
 
         /// UiModule pointer.
         boost::weak_ptr<UiServices::UiModule> uiModule_;

@@ -273,7 +273,7 @@ const char *ParseStateToString(ParseState s)
 
 const LLMessageInfo *LLMessageList::GetMessageInfoByID(LLMsgID id) const
 {
-    LLworkMessageMap::const_iterator iter = messages.find(id);
+    LLMessageMap::const_iterator iter = messages.find(id);
     if (iter != messages.end())
         return &iter->second;
     else
@@ -417,7 +417,7 @@ void LLMessageList::GenerateHeaderFile(const char *filename) const
         << endl;
 
     std::vector<LLMessageInfo> msgs;
-    for(LLworkMessageMap::const_iterator iter = messages.begin(); iter != messages.end(); ++iter)
+    for(LLMessageMap::const_iterator iter = messages.begin(); iter != messages.end(); ++iter)
     {
         const LLMessageInfo &msg = iter->second;
         msgs.push_back(msg);

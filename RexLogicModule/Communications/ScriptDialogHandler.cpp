@@ -5,7 +5,6 @@
 #include "Communications/ScriptDialogWidget.h"
 #include "ModuleManager.h"
 #include "RexLogicModule.h"
-#include "WorldStream.h"
 
 #include <UiModule.h>
 #include "Inworld/View/UiProxyWidget.h"

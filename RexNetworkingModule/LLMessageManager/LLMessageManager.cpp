@@ -149,6 +149,7 @@ namespace RexNetworking
     ,resentPackets(65536)
     ,lostPackets(65536)
     ,duplicatesReceived(65536)
+    ,connected(false)
 #endif
     {      
         receivedSequenceNumbers.clear();        
@@ -376,19 +377,26 @@ namespace RexNetworking
         try
         {
             connection = boost::shared_ptr<NetworkConnection>(new NetworkConnection(serverAddress, port));
-            return true;
+            connected = true;
         } catch(Poco::Net::NetException &e)
         {
             std::cout << "Failed to connect to " << serverAddress << ":" << port << ". Error: " << e.message() << std::endl;
-            return false;
         }
+
+        return connected;
     }
 
     void LLMessageManager::Disconnect()
     {
+        connected = false;
         connection->Close();
         ClearMessagePoolMemory();
         receivedSequenceNumbers.clear();
+    }
+
+    bool LLMessageManager::IsConnected()
+    {
+        return connected;
     }
 
     LLOutMessage *LLMessageManager::StartNewMessage(LLMsgID id)

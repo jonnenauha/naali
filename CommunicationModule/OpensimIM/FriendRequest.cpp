@@ -6,7 +6,6 @@
 #include <RexLogicModule.h>
 #include "FriendRequest.h"
 #include "ModuleManager.h"
-#include "WorldStream.h"
 #include "Framework.h"
 #include "CoreException.h"
 

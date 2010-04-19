@@ -4,11 +4,12 @@
 #define incl_RexNetworking_NetworkEvents_h
 
 #include "EventDataInterface.h"
+#include "RexUUID.h"
 
 namespace RexNetworking
 {
-    /// Defines the events posted by the OpenSimProtocolModule in category <b>NetworkState</b>.
-    /// \ingroup OpenSimProtocolClient 
+    class LLStream;
+
     namespace Events
     {
         /**
@@ -35,6 +36,30 @@ namespace RexNetworking
          */
         static const event_id_t EVENT_NETWORKING_REGISTERED = 0x04;
     }
+
+    class LLStreamReadyEvent : public Foundation::EventDataInterface
+    {
+        public:
+            explicit LLStreamReadyEvent(LLStream *stream);
+            virtual ~LLStreamReadyEvent();
+            
+            LLStream *stream;
+    };
+
+    /// Event data interface for EVENT_USER_CONNECTED and EVENT_USER_DISCONNECTED
+    class UserConnectivityEvent : public Foundation::EventDataInterface
+    {
+    public:
+        /// Constructor
+        /// @param agent_id Agent ID of the user.
+        explicit UserConnectivityEvent(const RexUUID &agent_id) : agentId(agent_id) {}
+        /// Agent ID.
+        RexUUID agentId;
+        /// Local ID.
+        int32_t localId;
+        /// Name.
+        std::string fullName;
+    };
 }
 
 #endif // incl_Protocol_NetworkEvents_h

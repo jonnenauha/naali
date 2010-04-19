@@ -19,7 +19,7 @@ use_package (OGRE)
 use_package (QT4)
 use_package (CURL)
 use_package (XMLRPC)
-use_modules (Core Foundation Interfaces SceneManager UiModule RexCommon SupportModules ProtocolUtilities)
+use_modules (Core Foundation Interfaces SceneManager UiModule RexCommon SupportModules RexNetworkingModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
@@ -30,7 +30,7 @@ link_package (QT4)
 link_package (CURL)
 link_package (XMLRPC)
 
-link_modules (Core Foundation Interfaces SceneManager UiModule RexCommon SupportModules ProtocolUtilities)
+link_modules (Core Foundation Interfaces SceneManager UiModule RexCommon SupportModules RexNetworkingModule)
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})

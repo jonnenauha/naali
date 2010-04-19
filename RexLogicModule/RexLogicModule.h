@@ -27,13 +27,6 @@ namespace OgreRenderer
     typedef boost::shared_ptr<OgreRenderer::Renderer> RendererPtr;
 }
 
-namespace ProtocolUtilities
-{
-    class WorldStream;
-    class InventorySkeleton;
-    class ProtocolModuleInterface;
-}
-
 namespace RexNetworking
 { 
     class LLSession;
@@ -59,13 +52,11 @@ namespace RexLogic
     class MainPanelHandler;
     class WorldInputLogic;
 
-    typedef boost::shared_ptr<ProtocolUtilities::WorldStream> WorldStreamConnectionPtr;
     typedef boost::shared_ptr<Avatar> AvatarPtr;
     typedef boost::shared_ptr<AvatarEditor> AvatarEditorPtr;
     typedef boost::shared_ptr<Primitive> PrimitivePtr;
     typedef boost::shared_ptr<AvatarControllable> AvatarControllablePtr;
     typedef boost::shared_ptr<CameraControllable> CameraControllablePtr;
-    typedef boost::shared_ptr<ProtocolUtilities::InventorySkeleton> InventoryPtr;
 
     //! Camera states handled by rex logic
     enum CameraState
@@ -87,7 +78,7 @@ namespace RexLogic
         virtual void Initialize();
         virtual void PostInitialize();
         virtual void Uninitialize();
-        virtual void SubscribeToNetworkEvents(boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> currentProtocolModule);
+        virtual void SubscribeToNetworkEvents();
         virtual void Update(f64 frametime);
 
         virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
@@ -98,8 +89,6 @@ namespace RexLogic
         static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
 
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_WorldLogic;
-
-        WorldStreamConnectionPtr GetServerConnection() const { return world_stream_; }
 
         //! accessor to LLUDP session functionality
         RexNetworking::LLSession *GetLLSession () const { return llsession_; }
@@ -118,9 +107,6 @@ namespace RexLogic
 
         //! @return The primitive handler object that manages reX primitive logic.
         PrimitivePtr GetPrimitiveHandler() const;
-
-        /// @return Invetory pointer.
-        InventoryPtr GetInventory() const;
 
         //! Returns the camera controllable
         CameraControllablePtr GetCameraControllable()  const { return camera_controllable_; }
@@ -272,9 +258,6 @@ namespace RexLogic
         //! event handler for framework events
         FrameworkEventHandler *framework_handler_;
 
-        //! Server connection
-        WorldStreamConnectionPtr world_stream_;
-
         //! Movement damping constant
         Real movement_damping_constant_;
 
@@ -325,9 +308,6 @@ namespace RexLogic
         typedef std::map<entity_id_t, std::set<entity_id_t> > ObjectParentMap;
         ObjectParentMap pending_parents_;
         
-        //! The connection state which is shown in the login window.
-        ProtocolUtilities::Connection::State connectionState_;
-
         //! An avatar controllable
         AvatarControllablePtr avatar_controllable_;
 
@@ -340,12 +320,6 @@ namespace RexLogic
         //! current camera state
         CameraState camera_state_;
 
-        //! OpenSim login handler
-        OpenSimLoginHandler *os_login_handler_;
-
-        //! Taiga login handler
-        TaigaLoginHandler *taiga_login_handler_;
-
         //! MainPanel handler
         MainPanelHandler *main_panel_handler_;
 
@@ -357,6 +331,9 @@ namespace RexLogic
 
         //! LLSession object
         RexNetworking::LLStream *llstream_;
+
+        //! Local state variable
+        int local_state_;
     };
 }
 

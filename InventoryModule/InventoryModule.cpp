@@ -308,9 +308,9 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
 
         if(event_id == Foundation::WORLD_STREAM_READY)
         {
-            ProtocolUtilities::WorldStreamReadyEvent *event_data = checked_static_cast<ProtocolUtilities::WorldStreamReadyEvent *>(data);
+            RexNetworking::LLStreamReadyEvent *event_data = checked_static_cast<RexNetworking::LLStreamReadyEvent *>(data);
             if (event_data)
-                currentWorldStream_ = event_data->WorldStream;
+                currentWorldStream_ = event_data->stream;
 
             return false;
         }

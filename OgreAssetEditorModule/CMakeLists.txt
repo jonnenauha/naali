@@ -32,7 +32,7 @@ use_package (BOOST)
 use_package (POCO)
 use_package (OGRE)
 use_package (QT4)
-use_modules (Core Foundation Interfaces RexCommon ProtocolUtilities AssetModule OgreRenderingModule UiModule)
+use_modules (Core Foundation Interfaces RexCommon RexNetworkingModule AssetModule OgreRenderingModule UiModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${RESOURCE_SRCS})
 

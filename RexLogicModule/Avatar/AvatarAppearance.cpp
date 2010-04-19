@@ -34,8 +34,8 @@
 #include "ConfigurationManager.h"
 #include "ServiceManager.h"
 #include "EventManager.h"
-#include "WorldStream.h"
 #include "EC_HoveringText.h"
+#include "RexNetworkingModule.h"
 
 #include "Poco/URI.h"
 
@@ -966,13 +966,13 @@ namespace RexLogic
                     // See that the asset is actually an avatar description we uploaded
                     if (event_data->name.find("Avatar") != std::string::npos)
                     {                   
-                        WorldStreamConnectionPtr conn = rexlogicmodule_->GetServerConnection();
+                        RexNetworking::LLStream *conn = rexlogicmodule_->GetLLStream();
                         if (conn)
                         {
                             RexLogicModule::LogDebug("Sending info about new inventory based appearance " + event_data->assetId.ToString());
                             StringVector strings;
                             std::string method = "RexSetAppearance";
-                            strings.push_back(conn->GetInfo().agentID.ToString());
+                            strings.push_back(conn->GetParameters().agent_id.ToString());
                             strings.push_back(event_data->assetId.ToString());
                             conn->SendGenericMessage(method, strings);                                                            
                         }
@@ -1648,7 +1648,7 @@ namespace RexLogic
                 {
                     RexLogicModule::LogInfo("Avatar exported successfully");
                     // Send information of appearance change
-                    WorldStreamConnectionPtr conn = rexlogicmodule_->GetServerConnection();
+                    RexNetworking::LLStream *conn = rexlogicmodule_->GetLLStream();
                     if (conn)
                     {                    
                         std::string method = "RexAppearance";

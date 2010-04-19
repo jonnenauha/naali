@@ -13,6 +13,7 @@
 #include "EventManager.h"
 #include "ServiceManager.h"
 #include "CoreException.h"
+#include "RexNetworkingModule.h"
 
 namespace Asset
 {
@@ -62,11 +63,8 @@ namespace Asset
             Console::Bind(this, &AssetModule::ConsoleRequestAsset)));
     }
 
-    void AssetModule::SubscribeToNetworkEvents(boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> currentProtocolModule)
+    void AssetModule::SubscribeToNetworkEvents()
     {
-        protocolModule_ = currentProtocolModule;
-        udp_asset_provider_->SetCurrentProtocolModule(protocolModule_);
-
         network_state_category_id_ = framework_->GetEventManager()->QueryEventCategory("NetworkState");
         if (network_state_category_id_ == 0)
             LogWarning("Failed to query \"NetworkState\" event category");
@@ -119,19 +117,20 @@ namespace Asset
         Foundation::EventDataInterface* data)
     {
         PROFILE(AssetModule_HandleEvent);
-        if ((category_id == inboundcategory_id_))
+        if (category_id == framework_category_id_ && event_id == Foundation::NETWORKING_REGISTERED)
         {
-            if (udp_asset_provider_)
-                return checked_static_cast<UDPAssetProvider*>(udp_asset_provider_.get())->HandleNetworkEvent(data);
-        }
-        else if (category_id == framework_category_id_ && event_id == Foundation::NETWORKING_REGISTERED)
-        {
-            ProtocolUtilities::NetworkingRegisteredEvent *event_data = dynamic_cast<ProtocolUtilities::NetworkingRegisteredEvent *>(data);
-            if (event_data)
-                SubscribeToNetworkEvents(event_data->currentProtocolModule);
+            SubscribeToNetworkEvents();
             return false;
         }
-        if (category_id == network_state_category_id_ && event_id == ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED)
+        else if (category_id == framework_category_id_ && event_id == Foundation::WORLD_STREAM_READY)
+        {
+            RexNetworking::LLStreamReadyEvent *event_data = checked_static_cast<RexNetworking::LLStreamReadyEvent *>(data);
+            if (event_data)
+            {
+                checked_static_cast<UDPAssetProvider*>(udp_asset_provider_.get())->SetStream(event_data->stream);
+            }
+        }
+        if (category_id == network_state_category_id_ && event_id == RexNetworking::Events::EVENT_SERVER_DISCONNECTED)
         {
             if (udp_asset_provider_)
                 checked_static_cast<UDPAssetProvider*>(udp_asset_provider_.get())->ClearAllTransfers();

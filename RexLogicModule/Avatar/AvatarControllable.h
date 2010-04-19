@@ -8,15 +8,14 @@
 #include "InputEvents.h"
 #include "Quaternion.h"
 
-namespace ProtocolUtilities
+namespace RexNetworking
 {
-    class WorldStream;
+    class LLStream;
 }
 
 namespace RexLogic
 {
     class RexLogicModule;
-    typedef boost::shared_ptr<ProtocolUtilities::WorldStream> WorldStreamConnectionPtr;
 
     //! A controller for avatar.
     /*! For more information about controllables, see EC_Controllable.
@@ -107,7 +106,7 @@ namespace RexLogic
         ActionControlFlagMap control_flags_;
 
         //! Rex server connection used to send updates
-        WorldStreamConnectionPtr connection_;
+        RexNetworking::LLStream *connection_;
 
         //! default speed for avatar rotation
         Real rotation_sensitivity_;
