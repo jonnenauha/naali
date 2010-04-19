@@ -3,7 +3,7 @@
 #include "StableHeaders.h"
 #include "BitStream.h"
 
-namespace ProtocolUtilities
+namespace RexNetworking
 {
     //! static variables must be initialized within the compilation unit (not header)
     const int BitStream::num_bits_in_elem_ = 8;

@@ -8,7 +8,7 @@
 #include "EC_OgreEnvironment.h"
 #include "SceneManager.h"
 #include "NetworkEvents.h"
-#include "NetworkMessages/NetInMessage.h"
+#include "LLMessageManager/LLInMessage.h"
 
 #include <QVector>
 
@@ -60,22 +60,21 @@ void Environment::CreateEnvironment()
     activeEnvEntity_ = entity;
 }
 
-bool Environment::HandleSimulatorViewerTimeMessage(ProtocolUtilities::NetworkEventInboundData *data)
+bool Environment::HandleSimulatorViewerTimeMessage(RexNetworking::LLInMessage *msg)
 {
-    ProtocolUtilities::NetInMessage &msg = *data->message;
-    msg.ResetReading();
+    msg->ResetReading();
 
     ///\ secPerDay,secPerYear, sunPhase seems to be zero, at least with 0.4 server
     try
     {
-	    usecSinceStart_ = (time_t)msg.ReadU64();
-	    secPerDay_ = msg.ReadU32();
-	    secPerYear_ = msg.ReadU32();
-	    sunDirection_ = msg.ReadVector3();
-	    sunPhase_ = msg.ReadF32();
-	    sunAngVelocity_ = msg.ReadVector3();
+	    usecSinceStart_ = (time_t)msg->ReadU64();
+	    secPerDay_ = msg->ReadU32();
+	    secPerYear_ = msg->ReadU32();
+	    sunDirection_ = msg->ReadVector3();
+	    sunPhase_ = msg->ReadF32();
+	    sunAngVelocity_ = msg->ReadVector3();
     }
-    catch(NetMessageException &)
+    catch(LLMessageException &)
     {
 		//! todo crashes with 0.4 server add error message.
     }

@@ -19,7 +19,8 @@
 #include "OgreMaterialUtils.h"
 #include "OgreConversionUtils.h"
 
-#include "BitStream.h"
+#include "RexNetworkingModule.h"
+#include "LLMessageManager/BitStream.h"
 #include "TerrainDecoder.h"
 #include "EnvironmentModule.h"
 #include "Terrain.h"
@@ -27,7 +28,6 @@
 #include "NetworkEvents.h"
 #include "ServiceManager.h"
 #include "RexTypes.h"
-#include "NetworkMessages/NetInMessage.h"
 
 #include "Entity.h"
 
@@ -428,17 +428,16 @@ namespace Environment
     }
 
     /// Code adapted from libopenmetaverse.org project, TerrainCompressor.cs / TerrainManager.cs
-    bool Terrain::HandleOSNE_LayerData(ProtocolUtilities::NetworkEventInboundData* data)
+    bool Terrain::HandleOSNE_LayerData(RexNetworking::LLInMessage* msg)
     {
         PROFILE(HandleOSNE_LayerData);
 
-        ProtocolUtilities::NetInMessage &msg = *data->message;
-        u8 layerID = msg.ReadU8();
+        u8 layerID = msg->ReadU8();
         size_t sizeBytes = 0;
-        const uint8_t *packedData = msg.ReadBuffer(&sizeBytes);
+        const uint8_t *packedData = msg->ReadBuffer(&sizeBytes);
         if (!packedData)
             return false;
-        ProtocolUtilities::BitStream bits(packedData, sizeBytes);
+        RexNetworking::BitStream bits(packedData, sizeBytes);
         TerrainPatchGroupHeader header;
 
         header.stride = bits.ReadBits(16);

@@ -74,12 +74,6 @@ namespace Environment
         //! @return Should return true if the event was handled and is not to be propagated further
         bool HandleFrameworkEvent(event_id_t event_id, Foundation::EventDataInterface* data);
 
-        //! Handles resouce event category.
-        //! @param event_id event id
-        //! @param data event data pointer
-        //! @return Should return true if the event was handled and is not to be propagated further
-        bool HandleNetworkEvent(event_id_t event_id, Foundation::EventDataInterface* data);
-
         //! Handles input event category.
         //! @param event_id event id
         //! @param data event data pointer
@@ -91,6 +85,9 @@ namespace Environment
         //! @return Should return true if the event was handled and is not to be propagated further
         // TODO
         bool HandleOSNE_RegionHandshake(RexNetworking::LLInMessage* msg);
+
+        //! Use stream to listen to incoming packets
+        void SetStream(RexNetworking::LLStream* stream);
 
         //! @return The terrain handler object that manages reX terrain logic.
         TerrainPtr GetTerrainHandler() const;
@@ -137,12 +134,6 @@ namespace Environment
         //! @return Returns type of this module. Needed for logging.
         static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Environment;
 
-    private:
-        //! No copying is allowed.
-        EnvironmentModule(const EnvironmentModule &);
-        //! No copying is allowed.
-        void operator=(const EnvironmentModule &);
-
         //! Create the terrain.
         void CreateTerrain();
 
@@ -154,6 +145,12 @@ namespace Environment
 
         //! Create the sky
         void CreateSky();
+
+    private:
+        //! No copying is allowed.
+        EnvironmentModule(const EnvironmentModule &);
+        //! No copying is allowed.
+        void operator=(const EnvironmentModule &);
 
         //! Event manager pointer.
         Foundation::EventManagerPtr event_manager_;

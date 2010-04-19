@@ -10,7 +10,7 @@
 #include "OgreTextureResource.h"
 #include "NetworkEvents.h"
 #include "ServiceManager.h"
-#include "NetworkMessages/NetInMessage.h"
+#include "LLMessageManager/LLInMessage.h"
 
 namespace Environment
 {
@@ -23,16 +23,15 @@ Sky::~Sky()
 {
 }
 
-bool Sky::HandleRexGM_RexSky(ProtocolUtilities::NetworkEventInboundData* data)
+bool Sky::HandleRexGM_RexSky(RexNetworking::LLInMessage* msg)
 {
     // HACK ON REX MODE, return false if you have problems
     // return false;
-    ProtocolUtilities::NetInMessage &msg = *data->message;
-    msg.ResetReading();
-    msg.SkipToFirstVariableByName("Parameter");
+    msg->ResetReading();
+    msg->SkipToFirstVariableByName("Parameter");
 
     // Variable block begins, should have currently (at least) 4 instances.
-    size_t instance_count = msg.ReadCurrentBlockInstanceCount();
+    size_t instance_count = msg->ReadCurrentBlockInstanceCount();
     if (instance_count < 4)
     {
         EnvironmentModule::LogWarning("Generic message \"RexSky\" did not contain all the necessary data.");
@@ -41,10 +40,10 @@ bool Sky::HandleRexGM_RexSky(ProtocolUtilities::NetworkEventInboundData* data)
 
     // 1st instance contains the sky type.
     OgreRenderer::SkyType type = OgreRenderer::SKYTYPE_NONE;
-    type = (OgreRenderer::SkyType)boost::lexical_cast<int>(msg.ReadString());
+    type = (OgreRenderer::SkyType)boost::lexical_cast<int>(msg->ReadString());
 
     // 2nd instance contains the texture uuid's
-    std::string image_string = msg.ReadString();
+    std::string image_string = msg->ReadString();
 
     //HACK split() returns vector-struct not a direct vector after verson 6
 #if OGRE_VERSION_MINOR <= 6 && OGRE_VERSION_MAJOR <= 1 
@@ -63,10 +62,10 @@ bool Sky::HandleRexGM_RexSky(ProtocolUtilities::NetworkEventInboundData* data)
     //StringVector images = boost::lexical_cast<StringVector>(images_type);
 
     // 3rd instance contains the curvature parameter.
-    float curvature = boost::lexical_cast<float>(msg.ReadString());
+    float curvature = boost::lexical_cast<float>(msg->ReadString());
 
     // 4th instance contains the tiling parameter.
-    float tiling = boost::lexical_cast<float>(msg.ReadString());
+    float tiling = boost::lexical_cast<float>(msg->ReadString());
 
     UpdateSky(type, images, curvature, tiling);
 

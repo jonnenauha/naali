@@ -16,9 +16,9 @@ namespace Resource
     }
 }
 
-namespace ProtocolUtilities
+namespace RexNetworking
 {
-    class NetworkEventInboundData;
+    class LLInMessage;
 }
 
 namespace Environment
@@ -40,7 +40,7 @@ namespace Environment
 
         /// Handler for the "RexSky" generic message.
         /// @param data Event data pointer.
-        bool HandleRexGM_RexSky(ProtocolUtilities::NetworkEventInboundData* data);
+        bool HandleRexGM_RexSky(RexNetworking::LLInMessage* msg);
 
         /** Update sky info.
          * @param type Type of the sky: box, dome, plane or none. 

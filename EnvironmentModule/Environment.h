@@ -15,9 +15,9 @@
 #include <QObject>
 #include <iostream>
 
-namespace ProtocolUtilities
+namespace RexNetworking
 {
-    class NetworkEventInboundData;
+    class LLInMessage;
 }
 
 
@@ -64,7 +64,7 @@ namespace Environment
          * Handles the "SimulatorViewerTimeMessage" packet.
          * @param data The network event data pointer.
          **/
-        bool HandleSimulatorViewerTimeMessage(ProtocolUtilities::NetworkEventInboundData* data);
+        bool HandleSimulatorViewerTimeMessage(RexNetworking::LLInMessage* msg);
 
         /** 
          * Sets a water fog for current active environment.

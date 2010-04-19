@@ -1,11 +1,11 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef RexLogic_BitStream_h
-#define RexLogic_BitStream_h
+#ifndef RexNetworking_BitStream_h
+#define RexNetworking_BitStream_h
 
 #include "CoreTypes.h"
 
-namespace ProtocolUtilities
+namespace RexNetworking
 {
     /// A stream reader utility for reading a byte array bit-by-bit.
     class BitStream

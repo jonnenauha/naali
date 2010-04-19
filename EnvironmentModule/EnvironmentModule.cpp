@@ -7,7 +7,6 @@
 
 #include "StableHeaders.h"
 #include "EnvironmentModule.h"
-#include "RealXtend/RexProtocolMsgIDs.h"
 #include "OgreTextureResource.h"
 #include "SceneManager.h"
 #include "NetworkEvents.h"
@@ -19,16 +18,241 @@
 #include "Sky.h"
 #include "EnvironmentEditor.h"
 #include "EC_Water.h"
-#include <GenericMessageUtils.h>
 #include <OgreRenderingModule.h>
 #include "PostProcessWidget.h"
 #include "ModuleManager.h"
 #include "EventManager.h"
 #include "RexNetworkUtils.h"
 #include "RexNetworkingModule.h"
+#include "LLMessageManager/GenericMessageUtils.h"
 
 namespace Environment
 {
+
+    struct LayerDataHandler
+    {
+        EnvironmentModule   *module;
+        EnvironmentEditor   *editor;
+
+        LayerDataHandler (EnvironmentModule *m, EnvironmentEditor *e)
+            : module (m), editor (e)
+        {}
+
+        void operator() (RexNetworking::LLInMessage *msg)
+        {
+            if(module->GetTerrainHandler().get())
+            {
+                static int count = 0;
+                bool kill_event = module->GetTerrainHandler()->HandleOSNE_LayerData(msg);
+                if (editor) editor->UpdateTerrain();
+            }
+        }
+    };
+
+    struct GenericMessageHandler
+    {
+        EnvironmentModule   *module;
+        PostProcessWidget   *postprocess;
+
+        GenericMessageHandler (EnvironmentModule *m, PostProcessWidget *p)
+            : module (m), postprocess (p)
+        {}
+
+        void operator() (RexNetworking::LLInMessage *msg)
+        {
+            std::string methodname = RexNetworking::ParseGenericMessageMethod(*msg);
+
+            if (methodname == "RexPostP")
+            {
+                boost::shared_ptr<OgreRenderer::OgreRenderingModule> rendering_module =
+                    module->GetFramework()->GetModuleManager()->GetModule<OgreRenderer::OgreRenderingModule>(Foundation::Module::MT_Renderer).lock();
+                if (rendering_module.get())
+                {
+                    OgreRenderer::RendererPtr renderer = rendering_module->GetRenderer();
+                    OgreRenderer::CompositionHandler &c_handler = renderer->GetCompositionHandler();
+                    StringVector vec = RexNetworking::ParseGenericMessageParameters(*msg);
+                    //Since postprocessing effect was enabled/disabled elsewhere, we have to notify the dialog about the event.
+                    //Also, no need to put effect on from the CompositionHandler since the dialog will notify CompositionHandler when 
+                    //button is checked
+                    if (postprocess)
+                    {
+                        QString effect_name = c_handler.MapNumberToEffectName(vec.at(0)).c_str();
+                        bool enabled = true;
+                        if (vec.at(1) == "False")
+                            enabled = false;
+
+                        postprocess->EnableEffect(effect_name,enabled);
+                    }
+                }
+            }
+            else if(methodname == "RexSky" && module->GetSkyHandler().get())
+            {
+                module->GetSkyHandler()->HandleRexGM_RexSky(msg);
+            }
+            else if (methodname == "RexWaterHeight")
+            {
+                msg->ResetReading();
+                msg->SkipToFirstVariableByName("Parameter");
+
+                // Variable block begins, should have currently (at least) 1 instances.
+                size_t instance_count = msg->ReadCurrentBlockInstanceCount();
+                if (instance_count < 1)
+                    return;
+
+                if (module->GetWaterHandler().get() != 0)
+                {
+                    std::string message = msg->ReadString();
+                    // Convert to float.
+                    try
+                    {
+                        float height = boost::lexical_cast<float>(message);
+                        module->GetWaterHandler()->SetWaterHeight(height);
+                    }
+                    catch(boost::bad_lexical_cast&)
+                    {
+                    }
+                }
+            }
+            else if (methodname == "RexDrawWater")
+            {
+                msg->ResetReading();
+                msg->SkipToFirstVariableByName("Parameter");
+
+                // Variable block begins, should have currently (at least) 1 instances.
+                size_t instance_count = msg->ReadCurrentBlockInstanceCount();
+                if (instance_count < 1 )
+                    return;
+
+                std::string message = msg->ReadString();
+                bool draw = ParseBool(message);
+                if (draw)
+                    if (module->GetWaterHandler().get())
+                        module->GetWaterHandler()->CreateWaterGeometry();
+                    else
+                        module->CreateWater();
+                else
+                    module->GetWaterHandler()->RemoveWaterGeometry();
+            }
+            else if (methodname == "RexFog")
+            {
+                /**
+                 * Currently we interprent that this message information is for water fog ! Not for ground fog.
+                 * @todo Someone needs to add more parameters to this package so that we can make ground fog also,
+                 */
+
+                StringVector parameters = RexNetworking::ParseGenericMessageParameters(*msg); 
+                if ( parameters.size() < 5)
+                    return;
+
+                // may have , instead of . so replace
+                ReplaceCharInplace(parameters[0], ',', '.');
+                ReplaceCharInplace(parameters[1], ',', '.');
+                ReplaceCharInplace(parameters[2], ',', '.');
+                ReplaceCharInplace(parameters[3], ',', '.');
+                ReplaceCharInplace(parameters[4], ',', '.');
+                float fogStart = 0.0, fogEnd = 0.0, fogC_r = 0.0, fogC_g = 0.0, fogC_b = 0.0;
+
+                try
+                {
+                    fogStart = boost::lexical_cast<float>(parameters[0]);
+                    fogEnd = boost::lexical_cast<float>(parameters[1]);
+                    fogC_r = boost::lexical_cast<float>(parameters[2]);
+                    fogC_g = boost::lexical_cast<float>(parameters[3]);
+                    fogC_b = boost::lexical_cast<float>(parameters[4]);
+                }
+                catch(boost::bad_lexical_cast&)
+                {
+                    return;
+                }
+                if (module->GetEnvironmentHandler() != 0)
+                {
+                    // Adjust fog.
+                    QVector<float> color;
+                    color<<fogC_r<<fogC_g<<fogC_b;
+                    module->GetEnvironmentHandler()->SetWaterFog(fogStart, fogEnd, color); 
+                }
+            }
+            else if (methodname == "RexAmbientL")
+            {
+                /**
+                 * Deals RexAmbientLight message. 
+                 **/
+
+                StringVector parameters = RexNetworking::ParseGenericMessageParameters(*msg); 
+                if ( parameters.size() < 3)
+                    return;
+
+                // may have , instead of . so replace
+                ReplaceCharInplace(parameters[0], ',', '.');
+                ReplaceCharInplace(parameters[1], ',', '.');
+                ReplaceCharInplace(parameters[2], ',', '.');
+
+                const QChar empty(' ');
+                StringVector sun_light_direction = SplitString(parameters[0].c_str(), empty.toAscii() );
+                StringVector sun_light_color = SplitString(parameters[1].c_str(), empty.toAscii());
+                StringVector ambient_light_color = SplitString(parameters[2].c_str(), empty.toAscii());
+
+                if ( module->GetEnvironmentHandler() != 0 )
+                {
+                    module->GetEnvironmentHandler()->SetSunDirection(module->GetEnvironmentHandler()->ConvertToQVector<float>(sun_light_direction));
+                    module->GetEnvironmentHandler()->SetSunColor(module->GetEnvironmentHandler()->ConvertToQVector<float>(sun_light_color));
+                    module->GetEnvironmentHandler()->SetAmbientLight(module->GetEnvironmentHandler()->ConvertToQVector<float>(ambient_light_color));
+                }
+            }
+        }
+    };
+
+    struct SimulatorViewerTimeMessageHandler
+    {
+        EnvironmentModule *module;
+
+        SimulatorViewerTimeMessageHandler (EnvironmentModule *m)
+            : module (m)
+        {}
+
+        void operator() (RexNetworking::LLInMessage *msg)
+        {
+            if (module->GetEnvironmentHandler()!= 0)
+                module->GetEnvironmentHandler()->HandleSimulatorViewerTimeMessage(msg);
+        }
+    };
+
+    struct RegionHandshakeHandler
+    {
+        EnvironmentModule *module;
+        EnvironmentEditor *editor;
+
+        RegionHandshakeHandler (EnvironmentModule *m, EnvironmentEditor *e)
+            : module (m), editor (e)
+        {}
+
+        void operator() (RexNetworking::LLInMessage *msg)
+        {
+            bool kill_event = module->HandleOSNE_RegionHandshake(msg);
+            if (editor)
+                editor->UpdateTerrainTextureRanges();
+        }
+    };
+
+    struct RegionInfoHandler
+    {
+        RexNetworking::LLStream *stream;
+        bool *waiting_for_regioninfo;
+
+        RegionInfoHandler (RexNetworking::LLStream *s, bool *w)
+            : stream (s), waiting_for_regioninfo (w)
+        {}
+
+        void operator() (RexNetworking::LLInMessage *msg)
+        {
+            if (*waiting_for_regioninfo)
+            {
+                stream->SendTextureCommitMessage();
+                *waiting_for_regioninfo = false;
+            }
+        }
+    };
+
     EnvironmentModule::EnvironmentModule() :
         ModuleInterfaceImpl(Foundation::Module::MT_Environment),
         waiting_for_regioninfomessage_(false),
@@ -134,13 +358,9 @@ namespace Environment
         {
             HandleResouceEvent(event_id, data);
         }
-        else if(category_id == network_in_event_category_)
-        {
-            HandleNetworkEvent(event_id, data);
-        }
         else if (category_id == network_state_event_category_)
         {
-            if (event_id == ProtocolUtilities::Events::EVENT_SERVER_CONNECTED)
+            if (event_id == RexNetworking::Events::EVENT_SERVER_CONNECTED)
             {
                 if (GetFramework()->GetDefaultWorldScene().get())
                 {
@@ -151,7 +371,7 @@ namespace Environment
                 }
             }
 
-            if (event_id == ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED)
+            if (event_id == RexNetworking::Events::EVENT_SERVER_DISCONNECTED)
                 if(postprocess_dialog_)
                     postprocess_dialog_->DisableAllEffects();
         }
@@ -206,7 +426,9 @@ namespace Environment
             {
                 RexNetworking::LLStreamReadyEvent *event_data = dynamic_cast<RexNetworking::LLStreamReadyEvent *>(data);
                 if (event_data)
+                {
                     currentWorldStream_ = event_data->stream;
+                }
 
                 return false;
             }
@@ -215,247 +437,19 @@ namespace Environment
         return false;
     }
 
-    bool EnvironmentModule::HandleNetworkEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+    void EnvironmentModule::SetStream(RexNetworking::LLStream* stream)
     {
-        ProtocolUtilities::NetworkEventInboundData *netdata = checked_static_cast<ProtocolUtilities::NetworkEventInboundData *>(data);
-        assert(netdata);
+        using std::make_pair;
 
-        switch(event_id)
-        {
-        case RexNetMsgLayerData:
-        {
-            if(terrain_.get())
-            {
-                static int count = 0;
-                bool kill_event = terrain_->HandleOSNE_LayerData(netdata);
-                if (environment_editor_)
-                    environment_editor_->UpdateTerrain();
-                return kill_event;
-            }
-        }
-        case RexNetMsgGenericMessage:
-        {
-            ProtocolUtilities::NetInMessage &msg = *netdata->message;
-            std::string methodname = ProtocolUtilities::ParseGenericMessageMethod(msg);
+        RexNetworking::LLStream::MessageHandlerMap map;
+        map.insert(make_pair(RexNetMsgLayerData, LayerDataHandler(this, environment_editor_)));
+        map.insert(make_pair(RexNetMsgGenericMessage, GenericMessageHandler(this, postprocess_dialog_)));
+        map.insert(make_pair(RexNetMsgSimulatorViewerTimeMessage, SimulatorViewerTimeMessageHandler(this)));
+        map.insert(make_pair(RexNetMsgRegionHandshake, RegionHandshakeHandler(this, environment_editor_)));
+        map.insert(make_pair(RexNetMsgRegionInfo, RegionInfoHandler(stream, &waiting_for_regioninfomessage_)));
 
-            if (methodname == "RexPostP")
-            {
-                boost::shared_ptr<OgreRenderer::OgreRenderingModule> rendering_module =
-                    framework_->GetModuleManager()->GetModule<OgreRenderer::OgreRenderingModule>(Foundation::Module::MT_Renderer).lock();
-                if (rendering_module.get())
-                {
-                    OgreRenderer::RendererPtr renderer = rendering_module->GetRenderer();
-                    OgreRenderer::CompositionHandler &c_handler = renderer->GetCompositionHandler();
-                    StringVector vec = ProtocolUtilities::ParseGenericMessageParameters(msg);
-                    //Since postprocessing effect was enabled/disabled elsewhere, we have to notify the dialog about the event.
-                    //Also, no need to put effect on from the CompositionHandler since the dialog will notify CompositionHandler when 
-                    //button is checked
-                    if (postprocess_dialog_)
-                    {
-                        QString effect_name = c_handler.MapNumberToEffectName(vec.at(0)).c_str();
-                        bool enabled = true;
-                        if (vec.at(1) == "False")
-                            enabled = false;
-
-                        postprocess_dialog_->EnableEffect(effect_name,enabled);
-                    }
-                }
-            }
-            else if(methodname == "RexSky" && sky_.get())
-            {
-                return GetSkyHandler()->HandleRexGM_RexSky(netdata);
-            }
-            else if (methodname == "RexWaterHeight")
-            {
-                msg.ResetReading();
-                msg.SkipToFirstVariableByName("Parameter");
-
-                // Variable block begins, should have currently (at least) 1 instances.
-                size_t instance_count = msg.ReadCurrentBlockInstanceCount();
-                if (instance_count < 1)
-                    return false;
-
-                if (water_.get() != 0)
-                {
-                    std::string message = msg.ReadString();
-                    // Convert to float.
-                    try
-                    {
-                        float height = boost::lexical_cast<float>(message);
-                        water_->SetWaterHeight(height);
-                    }
-                    catch(boost::bad_lexical_cast&)
-                    {
-                    }
-                }
-            }
-            else if (methodname == "RexDrawWater")
-            {
-                msg.ResetReading();
-                msg.SkipToFirstVariableByName("Parameter");
-
-                // Variable block begins, should have currently (at least) 1 instances.
-                size_t instance_count = msg.ReadCurrentBlockInstanceCount();
-                if (instance_count < 1 )
-                    return false;
-
-                std::string message = msg.ReadString();
-                bool draw = ParseBool(message);
-                if (draw)
-                    if (water_.get())
-                        water_->CreateWaterGeometry();
-                    else
-                        CreateWater();
-                else
-                    water_->RemoveWaterGeometry();
-            }
-            else if (methodname == "RexFog")
-            {
-                /**
-                 * Currently we interprent that this message information is for water fog ! Not for ground fog.
-                 * @todo Someone needs to add more parameters to this package so that we can make ground fog also,
-                 */
-
-                StringVector parameters = ProtocolUtilities::ParseGenericMessageParameters(msg); 
-                if ( parameters.size() < 5)
-                    return false;
-
-                // may have , instead of . so replace
-                ReplaceCharInplace(parameters[0], ',', '.');
-                ReplaceCharInplace(parameters[1], ',', '.');
-                ReplaceCharInplace(parameters[2], ',', '.');
-                ReplaceCharInplace(parameters[3], ',', '.');
-                ReplaceCharInplace(parameters[4], ',', '.');
-                float fogStart = 0.0, fogEnd = 0.0, fogC_r = 0.0, fogC_g = 0.0, fogC_b = 0.0;
-
-                try
-                {
-                    fogStart = boost::lexical_cast<float>(parameters[0]);
-                    fogEnd = boost::lexical_cast<float>(parameters[1]);
-                    fogC_r = boost::lexical_cast<float>(parameters[2]);
-                    fogC_g = boost::lexical_cast<float>(parameters[3]);
-                    fogC_b = boost::lexical_cast<float>(parameters[4]);
-                }
-                catch(boost::bad_lexical_cast&)
-                {
-                    return false;
-                }
-                if (environment_ != 0)
-                {
-                    // Adjust fog.
-                    QVector<float> color;
-                    color<<fogC_r<<fogC_g<<fogC_b;
-                    environment_->SetWaterFog(fogStart, fogEnd, color); 
-                }
-            }
-            else if (methodname == "RexAmbientL")
-            {
-                /**
-                 * Deals RexAmbientLight message. 
-                 **/
-                
-                StringVector parameters = ProtocolUtilities::ParseGenericMessageParameters(msg); 
-                if ( parameters.size() < 3)
-                    return false; 
-
-                // may have , instead of . so replace
-                ReplaceCharInplace(parameters[0], ',', '.');
-                ReplaceCharInplace(parameters[1], ',', '.');
-                ReplaceCharInplace(parameters[2], ',', '.');
-
-                const QChar empty(' ');
-                StringVector sun_light_direction = SplitString(parameters[0].c_str(), empty.toAscii() );
-                StringVector sun_light_color = SplitString(parameters[1].c_str(), empty.toAscii());
-                StringVector ambient_light_color = SplitString(parameters[2].c_str(), empty.toAscii());
-
-                if ( environment_ != 0 )
-                {
-                      environment_->SetSunDirection(environment_->ConvertToQVector<float>(sun_light_direction));
-                      environment_->SetSunColor(environment_->ConvertToQVector<float>(sun_light_color));
-                      environment_->SetAmbientLight(environment_->ConvertToQVector<float>(ambient_light_color));
-                 }
-            }
-        }
-        case RexNetMsgSimulatorViewerTimeMessage:
-        {
-            if (environment_!= 0)
-                return environment_->HandleSimulatorViewerTimeMessage(netdata);
-            break;
-        }
-        case RexNetMsgRegionHandshake:
-        {
-            bool kill_event = HandleOSNE_RegionHandshake(netdata);
-            if (environment_editor_)
-                environment_editor_->UpdateTerrainTextureRanges();
-            return kill_event;
-        }
-        case RexNetMsgRegionInfo:
-        {
-            if (waiting_for_regioninfomessage_)
-            {
-                currentWorldStream_->SendTextureCommitMessage();
-                waiting_for_regioninfomessage_ = false;
-            }
-        }
-        }
-
-        return false;
-    }
-
-    bool EnvironmentModule::HandleInputEvent(event_id_t event_id, Foundation::EventDataInterface* data)
-    {
-        if(event_id == Input::Events::MOUSEDRAG || event_id == Input::Events::MOUSEDRAG_STOPPED)
-            if(environment_editor_ && environment_editor_->GetTerrainPaintMode() == EnvironmentEditor::Paint3D)
-                environment_editor_->HandleMouseDragEvent(event_id, data);
-        return false;
-    }
-
-    bool EnvironmentModule::HandleOSNE_RegionHandshake(RexNetworking::LLInMessage *msg)
-    {
-        msg->ResetReading();
-
-        msg->SkipToNextVariable(); // RegionFlags U32
-        msg->SkipToNextVariable(); // SimAccess U8
-        msg->SkipToNextVariable(); // SimName
-        msg->SkipToNextVariable(); // SimOwner
-        msg->SkipToNextVariable(); // IsEstateManager
-
-        // Water height.
-        Real water_height = msg->ReadF32();
-        if(water_.get())
-            water_->SetWaterHeight(water_height);
-
-        msg->SkipToNextVariable(); // BillableFactor
-        msg->SkipToNextVariable(); // CacheID
-        for(int i = 0; i < 4; ++i)
-            msg.SkipToNextVariable(); // TerrainBase0..3
-
-        // Terrain texture id
-        RexAssetID terrain[4];
-        terrain[0] = msg->ReadUUID().ToString();
-        terrain[1] = msg->ReadUUID().ToString();
-        terrain[2] = msg->ReadUUID().ToString();
-        terrain[3] = msg->ReadUUID().ToString();
-
-        Real TerrainStartHeights[4];
-        TerrainStartHeights[0] = msg->ReadF32();
-        TerrainStartHeights[1] = msg->ReadF32();
-        TerrainStartHeights[2] = msg->ReadF32();
-        TerrainStartHeights[3] = msg->ReadF32();
-
-        Real TerrainStartRanges[4];
-        TerrainStartRanges[0] = msg->ReadF32();
-        TerrainStartRanges[1] = msg->ReadF32();
-        TerrainStartRanges[2] = msg->ReadF32();
-        TerrainStartRanges[3] = msg->ReadF32();
-
-        if(terrain_.get())
-        {
-            terrain_->SetTerrainTextures(terrain);
-            terrain_->SetTerrainHeightValues(TerrainStartHeights, TerrainStartRanges);
-        }
-
-        return false;
+        stream-> SetHandlers (map);
+        currentWorldStream_ = stream;
     }
 
     TerrainPtr EnvironmentModule::GetTerrainHandler() const
@@ -480,13 +474,13 @@ namespace Environment
 
     void EnvironmentModule::SendModifyLandMessage(f32 x, f32 y, u8 brush, u8 action, Real seconds, Real height)
     {
-        if (currentWorldStream_.get())
+        if (currentWorldStream_)
             currentWorldStream_->SendModifyLandPacket(x, y, brush, action, seconds, height);
     }
 
     void EnvironmentModule::SendTextureHeightMessage(Real start_height, Real height_range, uint corner)
     {
-        if (currentWorldStream_.get())
+        if (currentWorldStream_)
         {
             currentWorldStream_->SendTextureHeightsMessage(start_height, height_range, corner);
             waiting_for_regioninfomessage_ = true;
@@ -495,7 +489,7 @@ namespace Environment
 
     void EnvironmentModule::SendTextureDetailMessage(const RexTypes::RexAssetID &new_texture_id, uint texture_index)
     {
-        if (currentWorldStream_.get())
+        if (currentWorldStream_)
         {
             currentWorldStream_->SendTextureDetail(new_texture_id, texture_index);
             waiting_for_regioninfomessage_ = true;

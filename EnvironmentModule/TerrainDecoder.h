@@ -6,7 +6,7 @@
 #ifndef Environment_Terrain_h
 #define Environment_Terrain_h 
 
-#include "BitStream.h"
+#include "LLMessageManager/BitStream.h"
 
 namespace Environment
 {
@@ -50,7 +50,7 @@ struct DecodedTerrainPatch
 /// @param patches [out] The resulting patch data will be output here.
 /// @param bits [in] The LayerData packet, of which the Patch Group Header has already been read.
 /// @param groupHeader 
-void DecompressLand(std::vector<DecodedTerrainPatch> &patches, ProtocolUtilities::BitStream &bits, const TerrainPatchGroupHeader &groupHeader);
+void DecompressLand(std::vector<DecodedTerrainPatch> &patches, RexNetworking::BitStream &bits, const TerrainPatchGroupHeader &groupHeader);
 
 }
 
