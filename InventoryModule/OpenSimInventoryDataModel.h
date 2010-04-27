@@ -8,6 +8,8 @@
 #ifndef incl_InventoryModule_OpenSimInventoryDataModel_h
 #define incl_InventoryModule_OpenSimInventoryDataModel_h
 
+#include "RexTypes.h"
+#include "RexUUID.h"
 #include "AbstractInventoryDataModel.h"
 
 #include <QMap>
@@ -20,12 +22,12 @@ namespace Foundation
     class EventDataInterface;
 }
 
-namespace ProtocolUtilities
+namespace RexNetworking
 {
     class InventorySkeleton;
     class InventoryFolderSkeleton;
-    class WorldStream;
-    typedef boost::shared_ptr<WorldStream> WorldStreamPtr;
+    class LLStream;
+    class LLInMessage;
 }
 
 namespace Inventory
@@ -44,7 +46,7 @@ namespace Inventory
         /// @inventory_skeleton Inventory skeleton pointer.
         OpenSimInventoryDataModel(
             InventoryModule *owner,
-            ProtocolUtilities::InventorySkeleton *inventory_skeleton);
+            RexNetworking::InventorySkeleton *inventory_skeleton);
 
         /// Destructor.
         virtual ~OpenSimInventoryDataModel();
@@ -123,7 +125,7 @@ namespace Inventory
     public:
         /// Set World Stream.
         /// @param world_stream WorldStream pointer.
-        void SetWorldStream(ProtocolUtilities::WorldStreamPtr world_stream) { currentWorldStream_ = world_stream; }
+        void SetWorldStream(RexNetworking::LLStream *world_stream) { currentWorldStream_ = world_stream; }
 
         ///@return True if inventory has pending downloads.
         bool HasPendingDownloadRequests() const { return downloadRequests_.size() > 0; }
@@ -211,11 +213,11 @@ namespace Inventory
         /// @param folder_skeleton Folder skeleton for the folder to be created.
         void CreateNewFolderFromFolderSkeleton(
             InventoryFolder *parent_folder,
-            ProtocolUtilities::InventoryFolderSkeleton *folder_skeleton);
+            RexNetworking::InventoryFolderSkeleton *folder_skeleton);
 
         /// Creates the tree model data for inventory.
         /// @param inventory_skeleton OpenSim inventory skeleton.
-        void SetupModelData(ProtocolUtilities::InventorySkeleton *inventory_skeleton);
+        void SetupModelData(RexNetworking::InventorySkeleton *inventory_skeleton);
 
         /// Used by UploadFiles.
         void ThreadedUploadFiles(QStringList &filenames, QStringList &item_names);
@@ -248,7 +250,7 @@ namespace Inventory
         std::string uploadCapability_;
 
         /// Pointer to WorldStream
-        ProtocolUtilities::WorldStreamPtr currentWorldStream_;
+        RexNetworking::LLStream *currentWorldStream_;
 
         /// Download request map.
         AssetRequestMap downloadRequests_;

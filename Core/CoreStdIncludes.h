@@ -38,6 +38,7 @@
 #include <fstream>
 #include <math.h>
 #include <limits>
+#include <tr1/functional>
 
 #include <boost/smart_ptr.hpp>
 #include <boost/shared_ptr.hpp>

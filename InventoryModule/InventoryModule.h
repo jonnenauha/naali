@@ -16,9 +16,10 @@
 #include <QObject>
 #include <QMap>
 
-namespace ProtocolUtilities
+namespace RexNetworking
 {
-    class WorldStream;
+    class LLStream;
+    class LLInMessage;
 }
 
 namespace Foundation
@@ -108,19 +109,19 @@ namespace Inventory
 
         /// Handles InventoryDescendents packet.
         /// @param data Event data.
-        void HandleInventoryDescendents(Foundation::EventDataInterface* event_data);
+        void HandleInventoryDescendents(RexNetworking::LLInMessage* msg);
 
         /// Handles CreateInventoryItem packet.
         /// @param data Event data.
-        void HandleUpdateCreateInventoryItem(Foundation::EventDataInterface* event_data);
+        void HandleUpdateCreateInventoryItem(RexNetworking::LLInMessage* msg);
 
         /// Handles CreateInventoryItem packet.
         /// @param data Event data.
-        void HandleUuidNameReply(Foundation::EventDataInterface* event_data);
+        void HandleUuidNameReply(RexNetworking::LLInMessage* msg);
 
         /// Handles CreateInventoryItem packet.
         /// @param data Event data.
-        void HandleUuidGroupNameReply(Foundation::EventDataInterface* event_data);
+        void HandleUuidGroupNameReply(RexNetworking::LLInMessage* msg);
 
         /// Deletes all item properties windows.
         void DeleteAllItemPropertiesWindows();
@@ -156,7 +157,7 @@ namespace Inventory
 //        UploadProgressWindow *uploadProgressWindow_;
 
         /// WorldStream pointer
-        boost::shared_ptr<ProtocolUtilities::WorldStream> currentWorldStream_ ;
+        RexNetworking::LLStream *currentWorldStream_ ;
 
         /// Inventory data model.
         InventoryPtr inventory_;

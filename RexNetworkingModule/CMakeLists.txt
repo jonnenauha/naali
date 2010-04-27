@@ -19,7 +19,7 @@ file (GLOB MOC_FILES LLSession.h LLStream.h Capabilities.h XmlRpc.h)
 
 AddSourceFolder (OpenSim)
 AddSourceFolder (LLMessageManager)
-#AddSourceFolder (LLInventory)
+AddSourceFolder (LLInventory)
 
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 

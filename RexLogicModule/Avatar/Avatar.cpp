@@ -199,10 +199,10 @@ namespace RexLogic
             if (presence->agentId != owner_->GetLLStream()->GetParameters().agent_id)
             {
                 Foundation::EventManagerPtr eventMgr = owner_->GetFramework()->GetEventManager();
-                ProtocolUtilities::UserConnectivityEvent event_data(presence->agentId);
+                RexNetworking::UserConnectivityEvent event_data(presence->agentId);
                 event_data.fullName = presence->GetFullName();
                 event_data.localId = presence->localId;
-                eventMgr->SendEvent(eventMgr->QueryEventCategory("NetworkState"), ProtocolUtilities::Events::EVENT_USER_CONNECTED, &event_data);
+                eventMgr->SendEvent(eventMgr->QueryEventCategory("NetworkState"), RexNetworking::Events::EVENT_USER_CONNECTED, &event_data);
             }
 
             // Handle setting the avatar as child of another object, or possibly being parent itself
@@ -402,10 +402,10 @@ namespace RexLogic
             {
                 // Send event notifying about user leaving the world
                 Foundation::EventManagerPtr eventMgr = owner_->GetFramework()->GetEventManager();
-                ProtocolUtilities::UserConnectivityEvent event_data(presence->agentId);
+                RexNetworking::UserConnectivityEvent event_data(presence->agentId);
                 event_data.fullName = presence->GetFullName();
                 event_data.localId = presence->localId;
-                eventMgr->SendEvent(eventMgr->QueryEventCategory("NetworkState"), ProtocolUtilities::Events::EVENT_USER_DISCONNECTED, &event_data);
+                eventMgr->SendEvent(eventMgr->QueryEventCategory("NetworkState"), RexNetworking::Events::EVENT_USER_DISCONNECTED, &event_data);
             }
         }
 

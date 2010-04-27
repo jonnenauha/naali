@@ -30,7 +30,7 @@
 #include "AssetEvents.h"
 #include "AssetServiceInterface.h"
 #include "RenderServiceInterface.h"
-#include "Inventory/InventoryEvents.h"
+#include "LLInventory/InventoryEvents.h"
 #include "ConfigurationManager.h"
 #include "ServiceManager.h"
 #include "EventManager.h"

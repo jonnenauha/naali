@@ -5,6 +5,7 @@
 #include "Communications/ScriptDialogWidget.h"
 #include "ModuleManager.h"
 #include "RexLogicModule.h"
+#include "RexNetworkingModule.h"
 
 #include <UiModule.h>
 #include "Inworld/View/UiProxyWidget.h"
@@ -64,7 +65,7 @@ namespace RexLogic
             boost::shared_ptr<RexLogicModule> rexlogic = framework_->GetModuleManager()->GetModule<RexLogicModule>(Foundation::Module::MT_WorldLogic).lock();
             if (rexlogic.get())
             {
-                RexLogic::WorldStreamConnectionPtr connection = rexlogic->GetServerConnection();
+                RexNetworking::LLStream *connection = rexlogic->GetLLStream();
                 if (connection)
                     connection->SendChatFromViewerPacket(std::string(answer.toUtf8()).c_str(), channel);
             }

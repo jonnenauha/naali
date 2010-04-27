@@ -3,6 +3,7 @@
 #include "StableHeaders.h"
 #include "EventHandlers/NetworkStateEventHandler.h"
 #include "RexLogicModule.h"
+#include "RexNetworkingModule.h"
 #include "NetworkEvents.h"
 #include "Framework.h"
 #include "EventManager.h"
@@ -33,7 +34,7 @@ bool NetworkStateEventHandler::HandleNetworkStateEvent(event_id_t event_id, Foun
             owner_->CreateNewActiveScene("World");
             // Send WorldStream as internal event
             event_category_id_t framework_category_id = framework_->GetEventManager()->QueryEventCategory("Framework");
-            RexNetworking::LLStreamReadyEvent event_data(owner_->GetServerConnection());
+            RexNetworking::LLStreamReadyEvent event_data(owner_->GetLLStream());
             framework_->GetEventManager()->SendEvent(framework_category_id, Foundation::WORLD_STREAM_READY, &event_data);
             break;
         }
@@ -42,8 +43,8 @@ bool NetworkStateEventHandler::HandleNetworkStateEvent(event_id_t event_id, Foun
             // Might be user quitting or server dropping connection.
             // This event occurs when OpenSimProtocolModule has already closed connection. 
             // Make sure the rexlogic also thinks connection is closed.
-            if (owner_->GetServerConnection()->IsConnected())
-                owner_->GetServerConnection()->ForceServerDisconnect();
+            if (owner_->GetLLStream()->IsConnected())
+                owner_->GetLLStream()->Disconnect();
             if (framework_->HasScene("World"))
                 owner_->DeleteScene("World");
             break;

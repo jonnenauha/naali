@@ -110,6 +110,10 @@ namespace RexNetworking
         OnTransferAbort                 = PropagatingMessageHandler();
         OnLayerData                     = PropagatingMessageHandler();
         OnSimulatorViewerTimeMessage    = PropagatingMessageHandler();
+        OnInventoryDescendents          = PropagatingMessageHandler();
+        OnUpdateCreateInventoryItem     = PropagatingMessageHandler();
+        OnUUIDNameReply                 = PropagatingMessageHandler();
+        OnUUIDGroupNameReply            = PropagatingMessageHandler();
     }
 
     LLStream::~LLStream()
@@ -421,6 +425,54 @@ namespace RexNetworking
 
                         break;
                     }
+
+
+                case RexNetMsgInventoryDescendents:
+                    {
+                        PropagatingMessageHandler *h = OnInventoryDescendents.target
+                            <PropagatingMessageHandler> ();
+
+                        if (h) (*h) += i-> second;
+                        else
+                            OnInventoryDescendents = i-> second;
+                        break;
+                    }
+
+                case RexNetMsgUpdateCreateInventoryItem:
+                    {
+                        PropagatingMessageHandler *h = OnUpdateCreateInventoryItem.target
+                            <PropagatingMessageHandler> ();
+
+                        if (h) (*h) += i-> second;
+                        else
+                            OnUpdateCreateInventoryItem = i-> second;
+
+                        break;
+                    }
+
+                case RexNetMsgUUIDNameReply:
+                    {
+                        PropagatingMessageHandler *h = OnUUIDNameReply.target
+                            <PropagatingMessageHandler> ();
+
+                        if (h) (*h) += i-> second;
+                        else
+                            OnUUIDNameReply = i-> second;
+
+                        break;
+                    }
+
+                case RexNetMsgUUIDGroupNameReply:
+                    {
+                        PropagatingMessageHandler *h = OnUUIDGroupNameReply.target
+                            <PropagatingMessageHandler> ();
+
+                        if (h) (*h) += i-> second;
+                        else
+                            OnUUIDGroupNameReply = i-> second;
+
+                        break;
+                    }
             }
         }
     }
@@ -472,6 +524,42 @@ namespace RexNetworking
 
             case RexNetMsgScriptDialog:
                 OnScriptDialog (msg); break;
+            
+            case RexNetMsgImageData:
+                OnImageData (msg); break;
+
+            case RexNetMsgImagePacket:
+                OnImagePacket (msg); break;
+
+            case RexNetMsgImageNotInDatabase:
+                OnImageNotInDatabase (msg); break;
+
+            case RexNetMsgTransferInfo:
+                OnTransferInfo (msg); break;
+
+            case RexNetMsgTransferPacket:
+                OnTransferPacket (msg); break;
+
+            case RexNetMsgTransferAbort:
+                OnTransferAbort (msg); break;
+
+            case RexNetMsgLayerData:
+                OnLayerData (msg); break;
+
+            case RexNetMsgSimulatorViewerTimeMessage:
+                OnSimulatorViewerTimeMessage (msg); break;
+
+            case RexNetMsgInventoryDescendents:
+                OnInventoryDescendents (msg); break;
+
+            case RexNetMsgUpdateCreateInventoryItem:
+                OnUpdateCreateInventoryItem (msg); break;
+
+            case RexNetMsgUUIDNameReply:
+                OnUUIDNameReply (msg); break;
+
+            case RexNetMsgUUIDGroupNameReply:
+                OnUUIDGroupNameReply (msg); break;
         }
     }
             

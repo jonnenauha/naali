@@ -17,8 +17,9 @@
 #include "ModuleManager.h"
 #include "ServiceManager.h"
 #include "EventManager.h"
-#include "Inventory/InventorySkeleton.h"
-#include "Inventory/InventoryEvents.h"
+#include "RexNetworkingModule.h"
+#include "LLInventory/InventorySkeleton.h"
+#include "LLInventory/InventoryEvents.h"
 #include "AssetEvents.h"
 #include "ResourceInterface.h"
 #include "TextureServiceInterface.h"
@@ -45,7 +46,7 @@ namespace Inventory
 
 OpenSimInventoryDataModel::OpenSimInventoryDataModel(
     InventoryModule *owner,
-    ProtocolUtilities::InventorySkeleton *inventory_skeleton) :
+    RexNetworking::InventorySkeleton *inventory_skeleton) :
     owner_(owner),
     rootFolder_(0),
     worldLibraryOwnerId_("")
@@ -839,9 +840,9 @@ QString OpenSimInventoryDataModel::CreateNameFromFilename(const QString &filenam
 
 void OpenSimInventoryDataModel::CreateNewFolderFromFolderSkeleton(
     InventoryFolder *parent_folder,
-    ProtocolUtilities::InventoryFolderSkeleton *folder_skeleton)
+    RexNetworking::InventoryFolderSkeleton *folder_skeleton)
 {
-    using namespace ProtocolUtilities;
+    using namespace RexNetworking;
 
     InventoryFolder *newFolder = new InventoryFolder(STD_TO_QSTR(folder_skeleton->id.ToString()),
         STD_TO_QSTR(folder_skeleton->name), parent_folder, folder_skeleton->editable);
@@ -876,7 +877,7 @@ void OpenSimInventoryDataModel::CreateNewFolderFromFolderSkeleton(
     }
 }
 
-void OpenSimInventoryDataModel::SetupModelData(ProtocolUtilities::InventorySkeleton *inventory_skeleton)
+void OpenSimInventoryDataModel::SetupModelData(RexNetworking::InventorySkeleton *inventory_skeleton)
 {
     if (!inventory_skeleton && !inventory_skeleton->GetRoot())
     {

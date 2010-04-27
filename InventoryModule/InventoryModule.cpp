@@ -26,13 +26,14 @@
 //#include "QtUtils.h"
 
 #include "NetworkEvents.h"
-#include "Inventory/InventoryEvents.h"
+#include "LLInventory/InventoryEvents.h"
 
 #include "AssetServiceInterface.h"
 #include "AssetEvents.h"
 #include "ResourceInterface.h"
-#include "RealXtend/RexProtocolMsgIDs.h"
-#include "NetworkMessages/NetInMessage.h"
+#include "RexNetworkingModule.h"
+#include "LLMessageManager/LLProtocolMsgIDs.h"
+#include "LLMessageManager/LLInMessage.h"
 
 #include "UiModule.h"
 #include "Inworld/View/UiProxyWidget.h"
@@ -114,7 +115,6 @@ void InventoryModule::Uninitialize()
     DeleteAllItemPropertiesWindows();
 
     eventManager_.reset();
-    currentWorldStream_.reset();
     inventory_.reset();
 }
 
@@ -139,9 +139,9 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
     if (category_id == networkStateEventCategory_)
     {
         // Connected to server. Initialize inventory_ tree model.
-        if (event_id == ProtocolUtilities::Events::EVENT_SERVER_CONNECTED)
+        if (event_id == RexNetworking::Events::EVENT_SERVER_CONNECTED)
         {
-            ProtocolUtilities::AuthenticationEventData *auth = checked_static_cast<ProtocolUtilities::AuthenticationEventData *>(data);
+            RexNetworking::AuthenticationEventData *auth = checked_static_cast<RexNetworking::AuthenticationEventData *>(data);
             assert(auth);
             if (!auth)
                 return false;
@@ -168,7 +168,7 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
 
             switch(auth->type)
             {
-            case ProtocolUtilities::AT_Taiga:
+            case RexNetworking::AT_Taiga:
             {
                 // Check if python module is loaded and has taken care of PythonQt::init()
                 if (!framework_->GetModuleManager()->HasModule(Foundation::Module::MT_PythonScript))
@@ -187,8 +187,8 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
                 }
                 break;
             }
-            case ProtocolUtilities::AT_OpenSim:
-            case ProtocolUtilities::AT_RealXtend:
+            case RexNetworking::AT_OpenSim:
+            case RexNetworking::AT_RealXtend:
             {
                 // Create OpenSim inventory model.
                 inventory_ = InventoryPtr(new OpenSimInventoryDataModel(this, auth->inventorySkeleton));
@@ -202,7 +202,7 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
                 service_ = new InventoryService(inventory_.get());
                 break;
             }
-            case ProtocolUtilities::AT_Unknown:
+            case RexNetworking::AT_Unknown:
             default:
                 inventoryType_ = IDMT_Unknown;
                 break;
@@ -214,7 +214,7 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
         }
 
         // Disconnected from server. Close/delete inventory, upload progress, and all item properties windows.
-        if (event_id == ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED)
+        if (event_id == RexNetworking::Events::EVENT_SERVER_DISCONNECTED)
         {
             UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
             if (ui_module)
@@ -241,29 +241,7 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
 
         return false;
     }
-
-    // NetworkIn
-    if (category_id == networkInEventCategory_)
-    {
-        switch(event_id)
-        {
-        case RexNetMsgInventoryDescendents:
-            HandleInventoryDescendents(data);
-            return false;
-        case RexNetMsgUpdateCreateInventoryItem:
-            HandleUpdateCreateInventoryItem(data);
-            return false;
-        case RexNetMsgUUIDNameReply:
-            HandleUuidNameReply(data);
-            return false;
-        case RexNetMsgUUIDGroupNameReply:
-            HandleUuidGroupNameReply(data);
-            return false;
-        default:
-            return false;
-        }
-    }
-
+    
     // Inventory
     if (category_id == inventoryEventCategory_)
     {
@@ -300,9 +278,7 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
     {
         if (event_id == Foundation::NETWORKING_REGISTERED)
         {
-            ProtocolUtilities::NetworkingRegisteredEvent *event_data = checked_static_cast<ProtocolUtilities::NetworkingRegisteredEvent *>(data);
-            if (event_data)
-                SubscribeToNetworkEvents();
+            SubscribeToNetworkEvents();
             return false;
         }
 
@@ -311,6 +287,18 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
             RexNetworking::LLStreamReadyEvent *event_data = checked_static_cast<RexNetworking::LLStreamReadyEvent *>(data);
             if (event_data)
                 currentWorldStream_ = event_data->stream;
+
+            using std::make_pair;
+            using std::tr1::bind;
+
+            RexNetworking::LLStream::MessageHandlerMap map;
+
+            map.insert (make_pair (RexNetMsgInventoryDescendents, bind (&InventoryModule::HandleInventoryDescendents, this, _1)));
+            map.insert (make_pair (RexNetMsgUpdateCreateInventoryItem, bind (&InventoryModule::HandleUpdateCreateInventoryItem, this, _1)));
+            map.insert (make_pair (RexNetMsgUUIDNameReply, bind (&InventoryModule::HandleUuidNameReply, this, _1)));
+            map.insert (make_pair (RexNetMsgUUIDGroupNameReply, bind (&InventoryModule::HandleUuidGroupNameReply, this, _1)));
+
+            currentWorldStream_-> SetHandlers (map);
 
             return false;
         }
@@ -352,7 +340,7 @@ Console::CommandResult InventoryModule::UploadAsset(const StringVector &params)
 {
     using namespace RexTypes;
 
-    if (!currentWorldStream_.get())
+    if (!currentWorldStream_)
         return Console::ResultFailure("Not connected to server.");
 
     if (!inventory_.get())
@@ -402,7 +390,7 @@ Console::CommandResult InventoryModule::UploadAsset(const StringVector &params)
 
 Console::CommandResult InventoryModule::UploadMultipleAssets(const StringVector &params)
 {
-    if (!currentWorldStream_.get())
+    if (!currentWorldStream_)
         return Console::ResultFailure("Not connected to server.");
 
     if (!inventory_.get())
@@ -428,7 +416,7 @@ Console::CommandResult InventoryModule::UploadMultipleAssets(const StringVector 
 #ifdef _DEBUG
 Console::CommandResult InventoryModule::InventoryServiceTest(const StringVector &params)
 {
-    if (!currentWorldStream_.get())
+    if (!currentWorldStream_)
         return Console::ResultFailure("Not connected to server.");
 
     if (!inventory_.get())
@@ -525,31 +513,25 @@ void InventoryModule::CloseItemPropertiesWindow(const QString &inventory_id, boo
     }
 }
 
-void InventoryModule::HandleInventoryDescendents(Foundation::EventDataInterface* event_data)
+void InventoryModule::HandleInventoryDescendents(RexNetworking::LLInMessage* msg)
 {
-    ProtocolUtilities::NetworkEventInboundData *data = checked_static_cast<ProtocolUtilities::NetworkEventInboundData *>(event_data);
-    assert(data);
-    if (!data)
-        return;
-
-    ProtocolUtilities::NetInMessage &msg = *data->message;
-    msg.ResetReading();
+    msg->ResetReading();
 
     // AgentData
-    RexUUID agent_id = msg.ReadUUID();
-    RexUUID session_id = msg.ReadUUID();
+    RexUUID agent_id = msg->ReadUUID();
+    RexUUID session_id = msg->ReadUUID();
 
     // Check that this packet is for us.
-    if (agent_id != currentWorldStream_->GetInfo().agentID &&
-        session_id != currentWorldStream_->GetInfo().sessionID)
+    if (agent_id != currentWorldStream_->GetParameters().agent_id &&
+        session_id != currentWorldStream_->GetParameters().session_id)
     {
         LogError("Received InventoryDescendents packet with wrong AgentID and/or SessionID.");
         return;
     }
 
-    msg.SkipToNextVariable();               //OwnerID UUID, owner of the folders creatd.
-    msg.SkipToNextVariable();               //Version S32, version of the folder for caching
-    int32_t descendents = msg.ReadS32();    //Descendents, count to help with caching
+    msg->SkipToNextVariable();               //OwnerID UUID, owner of the folders creatd.
+    msg->SkipToNextVariable();               //Version S32, version of the folder for caching
+    int32_t descendents = msg->ReadS32();    //Descendents, count to help with caching
     if (descendents == 0)
         return;
 
@@ -557,22 +539,22 @@ void InventoryModule::HandleInventoryDescendents(Foundation::EventDataInterface*
     bool exceptionOccurred = false;
 
     // FolderData, Variable block.
-    size_t instance_count = msg.ReadCurrentBlockInstanceCount();
+    size_t instance_count = msg->ReadCurrentBlockInstanceCount();
     for(size_t i = 0; i < instance_count; ++i)
     {
         try
         {
             // Gather event data.
             Inventory::InventoryItemEventData folder_data(Inventory::IIT_Folder);
-            folder_data.id = msg.ReadUUID();
-            folder_data.parentId = msg.ReadUUID();
-            folder_data.inventoryType = msg.ReadS8();
-            folder_data.name = msg.ReadString();
+            folder_data.id = msg->ReadUUID();
+            folder_data.parentId = msg->ReadUUID();
+            folder_data.inventoryType = msg->ReadS8();
+            folder_data.name = msg->ReadString();
 
             // Send event.
             eventManager_->SendEvent(inventoryEventCategory_, Inventory::Events::EVENT_INVENTORY_DESCENDENT, &folder_data);
         }
-        catch(NetMessageException &)
+        catch(LLMessageException &)
         {
             exceptionOccurred = true;
         }
@@ -583,132 +565,120 @@ void InventoryModule::HandleInventoryDescendents(Foundation::EventDataInterface*
     /// data from block interpreting it as ItemData block. This problem doesn't happen with 0.5.
     if (exceptionOccurred)
     {
-        msg.ResetReading();
+        msg->ResetReading();
         for(int i = 0; i < 5; ++i)
-            msg.SkipToNextVariable();
+            msg->SkipToNextVariable();
     }
 
     // ItemData, Variable block.
-    instance_count = msg.ReadCurrentBlockInstanceCount();
+    instance_count = msg->ReadCurrentBlockInstanceCount();
     for(size_t i = 0; i < instance_count; ++i)
     {
         try
         {
             // Gather event data.
             Inventory::InventoryItemEventData asset_data(Inventory::IIT_Asset);
-            asset_data.id = msg.ReadUUID();
-            asset_data.parentId = msg.ReadUUID();
-            asset_data.creatorId = msg.ReadUUID();
-            asset_data.ownerId = msg.ReadUUID();
-            asset_data.groupId = msg.ReadUUID();
+            asset_data.id = msg->ReadUUID();
+            asset_data.parentId = msg->ReadUUID();
+            asset_data.creatorId = msg->ReadUUID();
+            asset_data.ownerId = msg->ReadUUID();
+            asset_data.groupId = msg->ReadUUID();
 
             ///\note Skipping some permission & sale related stuff.
-            msg.SkipToFirstVariableByName("AssetID");
-            asset_data.assetId = msg.ReadUUID();
-            asset_data.assetType = msg.ReadS8();
-            asset_data.inventoryType = msg.ReadS8();
-            msg.SkipToFirstVariableByName("Name");
-            asset_data.name = msg.ReadString();
-            asset_data.description = msg.ReadString();
+            msg->SkipToFirstVariableByName("AssetID");
+            asset_data.assetId = msg->ReadUUID();
+            asset_data.assetType = msg->ReadS8();
+            asset_data.inventoryType = msg->ReadS8();
+            msg->SkipToFirstVariableByName("Name");
+            asset_data.name = msg->ReadString();
+            asset_data.description = msg->ReadString();
 
-            asset_data.creationTime = msg.ReadS32();
-            msg.SkipToNextInstanceStart();
-            //msg.ReadU32(); //CRC
+            asset_data.creationTime = msg->ReadS32();
+            msg->SkipToNextInstanceStart();
+            //msg->ReadU32(); //CRC
 
             // Send event.
             eventManager_->SendEvent(inventoryEventCategory_, Inventory::Events::EVENT_INVENTORY_DESCENDENT, &asset_data);
         }
-        catch(NetMessageException &e)
+        catch(LLMessageException &e)
         {
-            LogError("Catched NetMessageException: " + e.What() + " while reading InventoryDescendents packet.");
+            LogError("Catched LLMessageException: " + e.What() + " while reading InventoryDescendents packet.");
         }
     }
 
     return;
 }
 
-void InventoryModule::HandleUpdateCreateInventoryItem(Foundation::EventDataInterface* event_data)
+void InventoryModule::HandleUpdateCreateInventoryItem(RexNetworking::LLInMessage* msg)
 {
     ///\note It seems that this packet is only sent by 0.4 reX server.
     ///     Maybe drop support at some point?
-    ProtocolUtilities::NetworkEventInboundData* data = checked_static_cast<ProtocolUtilities::NetworkEventInboundData *>(event_data);
-    assert(data);
-    if (!data)
-        return;
-
-    ProtocolUtilities::NetInMessage &msg = *data->message;
-    msg.ResetReading();
+    msg->ResetReading();
 
     // AgentData
-    RexUUID agent_id = msg.ReadUUID();
-    if (agent_id != currentWorldStream_->GetInfo().agentID)
+    RexUUID agent_id = msg->ReadUUID();
+    if (agent_id != currentWorldStream_->GetParameters().agent_id)
     {
         LogError("Received UpdateCreateInventoryItem packet with wrong AgentID, ignoring packet.");
         return;
     }
 
-    bool simApproved = msg.ReadBool();
+    bool simApproved = msg->ReadBool();
     if (!simApproved)
     {
         LogInfo("Server did not approve your inventory item upload!");
         return;
     }
 
-    msg.SkipToNextVariable(); // TransactionID, UUID
+    msg->SkipToNextVariable(); // TransactionID, UUID
 
     // InventoryData, variable block.
-    size_t instance_count = msg.ReadCurrentBlockInstanceCount();
+    size_t instance_count = msg->ReadCurrentBlockInstanceCount();
     for(size_t i = 0; i < instance_count; ++i)
     {
         try
         {
             // Gather event data.
             Inventory::InventoryItemEventData asset_data(Inventory::IIT_Asset);
-            asset_data.id = msg.ReadUUID();
-            asset_data.parentId = msg.ReadUUID();
+            asset_data.id = msg->ReadUUID();
+            asset_data.parentId = msg->ReadUUID();
 
             ///\note Skipping all permission & sale related stuff.
-            msg.SkipToFirstVariableByName("AssetID");
-            asset_data.assetId = msg.ReadUUID();
-            asset_data.assetType = msg.ReadS8();
-            asset_data.inventoryType = msg.ReadS8();
-            msg.SkipToFirstVariableByName("Name");
-            asset_data.name = msg.ReadString();
-            asset_data.description = msg.ReadString();
+            msg->SkipToFirstVariableByName("AssetID");
+            asset_data.assetId = msg->ReadUUID();
+            asset_data.assetType = msg->ReadS8();
+            asset_data.inventoryType = msg->ReadS8();
+            msg->SkipToFirstVariableByName("Name");
+            asset_data.name = msg->ReadString();
+            asset_data.description = msg->ReadString();
 
-            msg.SkipToNextInstanceStart();
-            //msg.ReadS32(); //CreationDate
-            //msg.ReadU32(); //CRC
+            msg->SkipToNextInstanceStart();
+            //msg->ReadS32(); //CreationDate
+            //msg->ReadU32(); //CRC
 
             // Send event.
             eventManager_->SendEvent(inventoryEventCategory_, Inventory::Events::EVENT_INVENTORY_DESCENDENT, &asset_data);
         }
-        catch (NetMessageException &e)
+        catch (LLMessageException &e)
         {
-            LogError("Catched NetMessageException: " + e.What() + " while reading UpdateCreateInventoryItem packet.");
+            LogError("Catched LLMessageException: " + e.What() + " while reading UpdateCreateInventoryItem packet.");
         }
     }
 }
 
-void InventoryModule::HandleUuidNameReply(Foundation::EventDataInterface* event_data)
+void InventoryModule::HandleUuidNameReply(RexNetworking::LLInMessage* msg)
 {
-    ProtocolUtilities::NetworkEventInboundData *data = checked_static_cast<ProtocolUtilities::NetworkEventInboundData *>(event_data);
-    assert(data);
-    if (!data)
-        return;
-
-    ProtocolUtilities::NetInMessage &msg = *data->message;
-    msg.ResetReading();
+    msg->ResetReading();
 
     // UUIDNameBlock, variable block.
     QMap<RexUUID, QString> map;
-    size_t instance_count = msg.ReadCurrentBlockInstanceCount();
+    size_t instance_count = msg->ReadCurrentBlockInstanceCount();
     for(size_t i = 0; i < instance_count; ++i)
     {
-        RexUUID id = msg.ReadUUID();
-        QString name(msg.ReadString().c_str());
+        RexUUID id = msg->ReadUUID();
+        QString name(msg->ReadString().c_str());
         name.append(" ");
-        name.append(msg.ReadString().c_str());
+        name.append(msg->ReadString().c_str());
         map[id] = name;
     }
 
@@ -718,23 +688,17 @@ void InventoryModule::HandleUuidNameReply(Foundation::EventDataInterface* event_
         it.next().value()->HandleUuidNameReply(map);
 }
 
-void InventoryModule::HandleUuidGroupNameReply(Foundation::EventDataInterface* event_data)
+void InventoryModule::HandleUuidGroupNameReply(RexNetworking::LLInMessage* msg)
 {
-    ProtocolUtilities::NetworkEventInboundData* data = checked_static_cast<ProtocolUtilities::NetworkEventInboundData *>(event_data);
-    assert(data);
-    if (!data)
-        return;
-
-    ProtocolUtilities::NetInMessage &msg = *data->message;
-    msg.ResetReading();
+    msg->ResetReading();
 
     // UUIDNameBlock, variable block.
     QMap<RexUUID, QString> map;
-    size_t instance_count = msg.ReadCurrentBlockInstanceCount();
+    size_t instance_count = msg->ReadCurrentBlockInstanceCount();
     for(size_t i = 0; i < instance_count; ++i)
     {
-        RexUUID id = msg.ReadUUID();
-        QString name(msg.ReadString().c_str());
+        RexUUID id = msg->ReadUUID();
+        QString name(msg->ReadString().c_str());
         map[id] = name;
     }
 

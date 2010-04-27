@@ -107,6 +107,10 @@ namespace RexNetworking
             MessageHandler OnTransferAbort;
             MessageHandler OnLayerData;
             MessageHandler OnSimulatorViewerTimeMessage;
+            MessageHandler OnInventoryDescendents;
+            MessageHandler OnUpdateCreateInventoryItem;
+            MessageHandler OnUUIDNameReply;
+            MessageHandler OnUUIDGroupNameReply;
 
             //=================================================================
             // Stream control
