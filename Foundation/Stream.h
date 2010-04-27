@@ -3,7 +3,7 @@
 #ifndef incl_Foundation_Stream_h
 #define incl_Foundation_Stream_h
 
-#include <tr1/functional>
+#include <boost/tr1/functional.hpp>
 
 namespace Foundation
 {

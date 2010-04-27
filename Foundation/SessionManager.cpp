@@ -1,5 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
+#include "StableHeaders.h"
 #include "SessionManager.h"
 
 namespace Foundation
@@ -20,6 +21,7 @@ namespace Foundation
     {
         handl-> type = get_session_type_id (type);
         session_handlers_.push_back (handl.release());
+        return true;
     }
 
     int SessionManager::GetType (const Session *session) const

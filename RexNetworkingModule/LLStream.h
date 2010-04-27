@@ -11,6 +11,8 @@
 #include "LLMessageManager/LLMessageManager.h"
 #include "LLParameters.h"
 
+#include "RexNetworkingModuleApi.h"
+
 #include <QObject>
 
 namespace RexNetworking
@@ -38,7 +40,7 @@ namespace RexNetworking
         std::string description;
     };
 
-    class LLStream : 
+    class REXNETWORKING_MODULE_API LLStream : 
         public QObject, 
         public Foundation::Stream, 
         public INetMessageListener

@@ -21,7 +21,7 @@
 #include "EventManager.h"
 #include "ModuleManager.h"
 #include "NetworkEvents.h"
-#include "Inventory/InventoryEvents.h"
+#include "LLInventory/InventoryEvents.h"
 #include "ResourceInterface.h"
 #include "AssetInterface.h"
 #include "UiModule.h"
@@ -254,7 +254,7 @@ bool OgreAssetEditorModule::HandleEvent(event_category_id_t category_id, event_i
     }
     else if (category_id == networkStateEventCategory_)
     {
-        if (event_id == ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED)
+        if (event_id == RexNetworking::Events::EVENT_SERVER_DISCONNECTED)
             editorManager_->DeleteAll();
     }
     else if (category_id == resourceEventCategory_)

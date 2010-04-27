@@ -17,7 +17,7 @@
 #include "Inworld/InworldSceneController.h"
 
 #include "Framework.h"
-#include "Inventory/InventoryEvents.h"
+#include "LLInventory/InventoryEvents.h"
 #include "AssetEvents.h"
 
 #include <QUiLoader>

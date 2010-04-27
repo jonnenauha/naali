@@ -15,6 +15,8 @@
 #include "LLParameters.h"
 #include "LLStream.h"
 
+#include "RexNetworkingModuleApi.h"
+
 class QNetworkAccessManager;
 class QNetworkReply;
 
@@ -26,7 +28,7 @@ namespace RexNetworking
     //=========================================================================
     // Login object for LLSession
 
-    class LLLogin : public QObject
+    class REXNETWORKING_MODULE_API LLLogin : public QObject
     {
         Q_OBJECT
 
@@ -49,7 +51,7 @@ namespace RexNetworking
     //=========================================================================
     // Login object for LLSession
 
-    class LLLogout
+    class REXNETWORKING_MODULE_API LLLogout
     {
         public:
             LLLogout (LLSession *sesson);
@@ -62,7 +64,7 @@ namespace RexNetworking
     //=========================================================================
     // LL Session 
 
-    class LLSession : public Foundation::Session
+    class REXNETWORKING_MODULE_API LLSession : public Foundation::Session
     {
         public:
             LLSession (int type);
@@ -100,7 +102,7 @@ namespace RexNetworking
     //=========================================================================
     // Handler for LLSession
 
-    class LLSessionHandler : public Foundation::SessionHandler
+    class REXNETWORKING_MODULE_API LLSessionHandler : public Foundation::SessionHandler
     {
         public:
             LLSessionHandler ();

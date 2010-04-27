@@ -12,9 +12,11 @@
 #include <QNetworkRequest>
 #include <QNetworkReply>
 
+#include "RexNetworkingModuleApi.h"
+
 namespace ProtocolUtilities
 {
-    class GridInfoHelper : public QObject
+    class REXNETWORKING_MODULE_API GridInfoHelper : public QObject
     {
 
     Q_OBJECT

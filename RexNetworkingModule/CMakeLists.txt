@@ -15,7 +15,7 @@ init_target (RexNetworkingModule OUTPUT modules/core)
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
-file (GLOB MOC_FILES LLSession.h LLStream.h Capabilities.h XmlRpc.h)
+file (GLOB MOC_FILES LLSession.h LLStream.h Capabilities.h XmlRpc.h OpenSim/GridInfoHelper.h)
 
 AddSourceFolder (OpenSim)
 AddSourceFolder (LLMessageManager)
@@ -28,9 +28,13 @@ QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 QT4_WRAP_UI(UI_SRCS ${UI_FILES})
 QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
 
+add_definitions (-DREXNETWORKING_MODULE_EXPORTS)
 add_definitions (-DUSE_QT)
 
 use_package (BOOST)
+use_package (POCO)
+use_package (XMLRPC)
+use_package (CURL)
 use_package (QT4)
 use_modules (Core Foundation Interfaces RexCommon HttpUtilities RpcUtilities RexNetworkingModule)
 
@@ -38,6 +42,9 @@ build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} )
 
 link_modules (Core Foundation Interfaces RexCommon HttpUtilities RpcUtilities) 
 link_package (BOOST)
+link_package (POCO)
+link_package (XMLRPC)
+link_package (CURL)
 link_package (QT4)
 
 # Copy XML files from source directory to target directory

@@ -9,6 +9,8 @@
 #include "LLMessageList.h"
 #include "Quaternion.h"
 
+#include "RexNetworkingModuleApi.h"
+
 using namespace RexTypes;
 class LLMessageManager;
 class RexUUID;
@@ -19,7 +21,7 @@ namespace RexNetworking
     /** Helps building outbound packets by supporting convenient addition of new data to the message. Also
         tracks that the message is crafted with the right structure.
         \ingroup OpenSimProtocolClient */
-    class LLOutMessage
+    class REXNETWORKING_MODULE_API LLOutMessage
     {
     public:
         LLOutMessage();

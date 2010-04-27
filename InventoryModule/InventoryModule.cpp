@@ -195,6 +195,7 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
 
                 // Set world stream used for sending udp packets.
                 static_cast<OpenSimInventoryDataModel *>(inventory_.get())->SetWorldStream(currentWorldStream_);
+                static_cast<OpenSimInventoryDataModel *>(inventory_.get())->SetWorldSession(currentWorldSession_);
 
                 inventoryType_ = IDMT_OpenSim;
                 inventoryWindow_->InitInventoryTreeModel(inventory_);
@@ -282,6 +283,13 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
             return false;
         }
 
+        if(event_id == Foundation::WORLD_SESSION_READY)
+        {
+            RexNetworking::LLSessionReadyEvent *event_data = checked_static_cast<RexNetworking::LLSessionReadyEvent *>(data);
+            if (event_data)
+                currentWorldSession_ = event_data->session;
+        }
+
         if(event_id == Foundation::WORLD_STREAM_READY)
         {
             RexNetworking::LLStreamReadyEvent *event_data = checked_static_cast<RexNetworking::LLStreamReadyEvent *>(data);
@@ -289,7 +297,8 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
                 currentWorldStream_ = event_data->stream;
 
             using std::make_pair;
-            using std::tr1::bind;
+            //using std::tr1::bind;
+            using boost::bind;
 
             RexNetworking::LLStream::MessageHandlerMap map;
 

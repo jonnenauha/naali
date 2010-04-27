@@ -5,10 +5,12 @@
 
 #include "CoreTypes.h"
 
+#include "RexNetworkingModuleApi.h"
+
 namespace RexNetworking
 {
     /// A stream reader utility for reading a byte array bit-by-bit.
-    class BitStream
+    class REXNETWORKING_MODULE_API BitStream
     {
     private:
         /// The memory is now accessed per-byte, but for optimization, one could use u32 reads.

@@ -38,7 +38,7 @@ namespace Environment
             : module (m), editor (e)
         {}
 
-        void operator() (RexNetworking::LLInMessage *msg)
+        void operator() (RexNetworking::LLInMessage *msg) const
         {
             if(module->GetTerrainHandler().get())
             {
@@ -58,7 +58,7 @@ namespace Environment
             : module (m), postprocess (p)
         {}
 
-        void operator() (RexNetworking::LLInMessage *msg)
+        void operator() (RexNetworking::LLInMessage *msg) const
         {
             std::string methodname = RexNetworking::ParseGenericMessageMethod(*msg);
 
@@ -210,7 +210,7 @@ namespace Environment
             : module (m)
         {}
 
-        void operator() (RexNetworking::LLInMessage *msg)
+        void operator() (RexNetworking::LLInMessage *msg) const
         {
             if (module->GetEnvironmentHandler()!= 0)
                 module->GetEnvironmentHandler()->HandleSimulatorViewerTimeMessage(msg);
@@ -226,9 +226,9 @@ namespace Environment
             : module (m), editor (e)
         {}
 
-        void operator() (RexNetworking::LLInMessage *msg)
+        void operator() (RexNetworking::LLInMessage *msg) const
         {
-            bool kill_event = module->HandleOSNE_RegionHandshake(msg);
+            //bool kill_event = module->HandleOSNE_RegionHandshake(msg); // TODO: IMPLEMENT
             if (editor)
                 editor->UpdateTerrainTextureRanges();
         }
@@ -243,7 +243,7 @@ namespace Environment
             : stream (s), waiting_for_regioninfo (w)
         {}
 
-        void operator() (RexNetworking::LLInMessage *msg)
+        void operator() (RexNetworking::LLInMessage *msg) const
         {
             if (*waiting_for_regioninfo)
             {
@@ -377,7 +377,7 @@ namespace Environment
         }
         else if(category_id == input_event_category_)
         {
-            HandleInputEvent(event_id, data);
+            //HandleInputEvent(event_id, data); // TODO: IMPLEMENT
         }
         return false;
     }

@@ -19,6 +19,7 @@
 namespace RexNetworking
 {
     class LLStream;
+    class LLSession;
     class LLInMessage;
 }
 
@@ -157,7 +158,10 @@ namespace Inventory
 //        UploadProgressWindow *uploadProgressWindow_;
 
         /// WorldStream pointer
-        RexNetworking::LLStream *currentWorldStream_ ;
+        RexNetworking::LLStream *currentWorldStream_;
+
+        /// WorldSession pointer
+        RexNetworking::LLSession *currentWorldSession_;
 
         /// Inventory data model.
         InventoryPtr inventory_;

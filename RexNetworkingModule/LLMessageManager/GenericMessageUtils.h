@@ -3,15 +3,17 @@
 #ifndef incl_RexNetworking_GenericMessageUtils_h
 #define incl_RexNetworking_GenericMessageUtils_h
 
+#include "RexNetworkingModuleApi.h"
+
 namespace RexNetworking
 {
     class LLInMessage;
 
     //! parse method from generic message packet
-    std::string ParseGenericMessageMethod(LLInMessage& message);
+    REXNETWORKING_MODULE_API std::string ParseGenericMessageMethod(LLInMessage& message);
 
     //! parse parameter list from generic message packet
-    StringVector ParseGenericMessageParameters(LLInMessage& message);
+    REXNETWORKING_MODULE_API StringVector ParseGenericMessageParameters(LLInMessage& message);
 }
 
 #endif 

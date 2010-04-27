@@ -9,6 +9,7 @@
 namespace RexNetworking
 {
     class LLStream;
+    class LLSession;
     class InventorySkeleton;
 
     /// Defines the events posted by the OpenSimProtocolModule in category <b>NetworkState</b>.
@@ -53,10 +54,19 @@ namespace RexNetworking
     class LLStreamReadyEvent : public Foundation::EventDataInterface
     {
         public:
-            explicit LLStreamReadyEvent(LLStream *stream);
+            explicit LLStreamReadyEvent(LLStream *s) : stream(s) {}
             virtual ~LLStreamReadyEvent();
             
             LLStream *stream;
+    };
+
+    class LLSessionReadyEvent : public Foundation::EventDataInterface
+    {
+        public:
+            explicit LLSessionReadyEvent(LLSession *s) : session(s) {}
+            virtual ~LLSessionReadyEvent();
+            
+            LLSession *session;
     };
 
     /// Event data interface for EVENT_USER_CONNECTED and EVENT_USER_DISCONNECTED

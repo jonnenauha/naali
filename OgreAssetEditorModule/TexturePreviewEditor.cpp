@@ -9,7 +9,7 @@
 #include "Inworld/View/UiWidgetProperties.h"
 #include "Inworld/InworldSceneController.h"
 #include "ModuleManager.h"
-#include "Inventory/InventoryEvents.h"
+#include "LLInventory/InventoryEvents.h"
 #include "AssetEvents.h"
 #include "TextureInterface.h"
 #include "ResourceInterface.h"

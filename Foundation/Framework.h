@@ -278,6 +278,7 @@ namespace Foundation
         const event_id_t PROGRAM_OPTIONS = 1;
         const event_id_t NETWORKING_REGISTERED = 2;
         const event_id_t WORLD_STREAM_READY = 3;
+        const event_id_t WORLD_SESSION_READY = 4;
     }
 
     //! Contains pre-parsed program options and non-parsed command line arguments.

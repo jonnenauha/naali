@@ -261,7 +261,8 @@ void RexLogicModule::PostInitialize()
     // Setup protocol-specific handlers
     
     using std::make_pair;
-    using std::tr1::bind;
+    //using std::tr1::bind;
+    using boost::bind;
     
     // LL Session -------------------------------------------------------------
     using RexNetworking::LLStream;

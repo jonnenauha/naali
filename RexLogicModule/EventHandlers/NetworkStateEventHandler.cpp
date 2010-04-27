@@ -32,10 +32,14 @@ bool NetworkStateEventHandler::HandleNetworkStateEvent(event_id_t event_id, Foun
         {   
             // The client has connected to the server. Create a new scene for that.
             owner_->CreateNewActiveScene("World");
+
             // Send WorldStream as internal event
             event_category_id_t framework_category_id = framework_->GetEventManager()->QueryEventCategory("Framework");
-            RexNetworking::LLStreamReadyEvent event_data(owner_->GetLLStream());
-            framework_->GetEventManager()->SendEvent(framework_category_id, Foundation::WORLD_STREAM_READY, &event_data);
+            RexNetworking::LLSessionReadyEvent session_event_data(owner_->GetLLSession());
+            framework_->GetEventManager()->SendEvent(framework_category_id, Foundation::WORLD_SESSION_READY, &session_event_data);
+            RexNetworking::LLStreamReadyEvent stream_event_data(owner_->GetLLStream());
+            framework_->GetEventManager()->SendEvent(framework_category_id, Foundation::WORLD_STREAM_READY, &stream_event_data);
+
             break;
         }
         case RexNetworking::Events::EVENT_SERVER_DISCONNECTED:

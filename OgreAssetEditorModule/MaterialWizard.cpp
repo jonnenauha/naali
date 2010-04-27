@@ -18,7 +18,7 @@
 #include "ModuleManager.h"
 #include "Inworld/InworldSceneController.h"
 
-#include "Inventory/InventoryEvents.h"
+#include "LLInventory/InventoryEvents.h"
 
 #include <QUiLoader>
 #include <QFile>

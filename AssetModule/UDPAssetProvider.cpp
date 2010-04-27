@@ -341,7 +341,8 @@ namespace Asset
         msgmgr_ = stream->GetMessageManager();
 
         using std::make_pair;
-        using std::tr1::bind;
+        //using std::tr1::bind;
+        using boost::bind;
 
         RexNetworking::LLStream::MessageHandlerMap map;
         map.insert (make_pair (RexNetMsgImageData, bind (&UDPAssetProvider::HandleTextureHeader, this, _1)));

@@ -27,6 +27,7 @@ namespace RexNetworking
     class InventorySkeleton;
     class InventoryFolderSkeleton;
     class LLStream;
+    class LLSession;
     class LLInMessage;
 }
 
@@ -126,6 +127,7 @@ namespace Inventory
         /// Set World Stream.
         /// @param world_stream WorldStream pointer.
         void SetWorldStream(RexNetworking::LLStream *world_stream) { currentWorldStream_ = world_stream; }
+        void SetWorldSession(RexNetworking::LLSession *world_session) { currentWorldSession_ = world_session; }
 
         ///@return True if inventory has pending downloads.
         bool HasPendingDownloadRequests() const { return downloadRequests_.size() > 0; }
@@ -251,6 +253,9 @@ namespace Inventory
 
         /// Pointer to WorldStream
         RexNetworking::LLStream *currentWorldStream_;
+
+        /// Pointer to WorldSession
+        RexNetworking::LLSession *currentWorldSession_;
 
         /// Download request map.
         AssetRequestMap downloadRequests_;

@@ -27,10 +27,10 @@ namespace RexNetworking
         ConnectHandlerList propagation;
 
         // call operator
-        void operator() ()
+        void operator() () const
         {
-            ConnectHandlerList::iterator i = propagation.begin();
-            ConnectHandlerList::iterator e = propagation.end();
+            ConnectHandlerList::const_iterator i = propagation.begin();
+            ConnectHandlerList::const_iterator e = propagation.end();
 
             for (; i != e; ++i) (*i) ();
         }
@@ -48,10 +48,10 @@ namespace RexNetworking
         MessageHandlerList propagation;
         
         // call operator
-        void operator() (LLInMessage *m)
+        void operator() (LLInMessage *m) const
         {
-            MessageHandlerList::iterator i = propagation.begin();
-            MessageHandlerList::iterator e = propagation.end();
+            MessageHandlerList::const_iterator i = propagation.begin();
+            MessageHandlerList::const_iterator e = propagation.end();
 
             for (; i != e; ++i) (*i) (m);
         }

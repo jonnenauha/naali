@@ -7,8 +7,9 @@
 #include "LLMessageException.h"
 #include "Quaternion.h"
 
-using namespace RexTypes;
+#include "RexNetworkingModuleApi.h"
 
+using namespace RexTypes;
 class RexUUID;
 
 namespace RexNetworking
@@ -18,7 +19,7 @@ namespace RexNetworking
         tracks that the message is read with the right structure.
         \ingroup OpenSimProtocolClient */
         
-    class LLInMessage
+    class REXNETWORKING_MODULE_API LLInMessage
     {
     public:
         LLInMessage(size_t seqNum, const uint8_t *compressedData, size_t numBytes, bool zeroEncoded);
