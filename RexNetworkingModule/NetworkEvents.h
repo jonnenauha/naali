@@ -55,7 +55,7 @@ namespace RexNetworking
     {
         public:
             explicit LLStreamReadyEvent(LLStream *s) : stream(s) {}
-            virtual ~LLStreamReadyEvent();
+            virtual ~LLStreamReadyEvent() {}
             
             LLStream *stream;
     };
@@ -64,7 +64,7 @@ namespace RexNetworking
     {
         public:
             explicit LLSessionReadyEvent(LLSession *s) : session(s) {}
-            virtual ~LLSessionReadyEvent();
+            virtual ~LLSessionReadyEvent() {}
             
             LLSession *session;
     };

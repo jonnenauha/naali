@@ -13,6 +13,7 @@
 #include <QNetworkReply>
 #include <QCryptographicHash>
 
+#include <QDebug>
 
 namespace RexNetworking
 {
@@ -241,10 +242,22 @@ namespace RexNetworking
 
     static LLLoginParameters parse_login_params (const Session::LoginParameters &p)
     {
-        // TODO
         LLLoginParameters params;
-        params.first = "d"; params.last = "d"; params.pass = "d";
-        params.service = "http://home.hulkko.net:9007";
+
+        // Names
+        QStringList names = p["Username"].split(" ");
+        params.first = names.at(0);
+        params.last = names.at(1);
+
+        // Password
+        params.pass = p["Password"];
+        
+        // Service url
+        QUrl service_url = QUrl(p["WorldAddress"]);
+        if (service_url.port() == -1)
+            service_url.setPort(80); // default to 80 if not given
+        params.service = service_url; 
+
         return params;
     }
 
@@ -427,8 +440,20 @@ namespace RexNetworking
     }
 
     bool LLSessionHandler::Accepts (const Session::LoginParameters &params) 
-    { 
-        return true; // TODO: sniff login params
+    {
+        qDebug() << "LLSessionHandler: checking login params" << endl << params;
+
+        if (params.contains("WorldAddress") &&
+            params.contains("Username") &&
+            params.contains("Password"))
+        {
+            if (params["Username"].split(" ").count() == 2)
+                return true;
+            else 
+                return false;
+        }
+        else
+            return false;
     } 
 
     Session *LLSessionHandler::Login (const Session::LoginParameters &params) 

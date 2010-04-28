@@ -190,8 +190,9 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
             case RexNetworking::AT_OpenSim:
             case RexNetworking::AT_RealXtend:
             {
+                /*
                 // Create OpenSim inventory model.
-                inventory_ = InventoryPtr(new OpenSimInventoryDataModel(this, auth->inventorySkeleton));
+                inventory_ = InventoryPtr(new OpenSimInventoryDataModel(this, currentWorldSession_->GetAgentParameters().inventory));
 
                 // Set world stream used for sending udp packets.
                 static_cast<OpenSimInventoryDataModel *>(inventory_.get())->SetWorldStream(currentWorldStream_);
@@ -201,6 +202,7 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
                 inventoryWindow_->InitInventoryTreeModel(inventory_);
                 SAFE_DELETE(service_);
                 service_ = new InventoryService(inventory_.get());
+                */
                 break;
             }
             case RexNetworking::AT_Unknown:

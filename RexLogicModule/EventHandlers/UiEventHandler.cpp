@@ -16,8 +16,8 @@ namespace RexLogic
     UiLoginHandler::UiLoginHandler (SessionManagerPtr mgr, QObject *sub)
         : sessionmgr_ (mgr)
     {
-         connect(sub, SIGNAL(StartOsLogin(QMap<QString,QString>)), 
-                 SLOT(Login(QMap<QString,QString>)));
+        connect(sub, SIGNAL(StartOsLogin(QMap<QString,QString>)), 
+                SLOT(Login(QMap<QString,QString>)));
 
         connect(sub, SIGNAL(StartRexLogin(QMap<QString,QString>)), 
                 SLOT(Login(QMap<QString,QString>)));

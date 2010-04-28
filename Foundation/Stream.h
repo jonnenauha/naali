@@ -3,7 +3,7 @@
 #ifndef incl_Foundation_Stream_h
 #define incl_Foundation_Stream_h
 
-#include <boost/tr1/functional.hpp>
+#include <boost/function.hpp>
 
 namespace Foundation
 {
@@ -11,7 +11,7 @@ namespace Foundation
     class Stream
     {
         public:
-            typedef std::tr1::function <void()> ConnectionHandler;
+            typedef boost::function <void()> ConnectionHandler;
 
             /// Returns whether stream is connected
             virtual bool IsConnected () const = 0;

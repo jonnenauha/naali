@@ -127,6 +127,9 @@ bool Primitive::HandleOSNE_ObjectUpdate(LLInMessage* msg)
         uint8_t pcode = msg->ReadU8();
 
         Scene::EntityPtr entity = GetOrCreatePrimEntity(localid, fullid);
+        if (!entity.get())
+            continue; // TODO HACK, the active scene is sometimes not set when we already get object updates and try to create entities into that "world scene"
+
         EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();
         EC_NetworkPosition *netpos = entity->GetComponent<EC_NetworkPosition>().get();
 

@@ -293,6 +293,8 @@ void RexLogicModule::PostInitialize()
     llhandler-> SetStreamHandlers (llmap);
 
     local_state_ = REXLOGIC_UNCONNECTED;
+
+    avatar_controllable_->SetConnection(llstream_);
 }
 
 void RexLogicModule::SubscribeToNetworkEvents()
@@ -402,10 +404,11 @@ void RexLogicModule::Update(f64 frametime)
         {
             local_state_ = REXLOGIC_CONNECTED;
 
+            RexNetworking::AuthenticationEventData data(RexNetworking::AT_OpenSim);
             // Send event indicating a succesfull connection
             GetFramework()->GetEventManager()->SendEvent
                 (GetFramework()->GetEventManager()->QueryEventCategory("NetworkState"), 
-                 RexNetworking::Events::EVENT_SERVER_CONNECTED, 0);
+                 RexNetworking::Events::EVENT_SERVER_CONNECTED, &data);
         }
         
         if (send_input_state_)

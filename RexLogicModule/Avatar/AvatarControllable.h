@@ -38,6 +38,9 @@ namespace RexLogic
         //! destructor
         ~AvatarControllable() {}
 
+        //! Set connection stream
+        void SetConnection(RexNetworking::LLStream *s) { connection_ = s; }
+
         //! Input event handler for handling controllable events
         bool HandleInputEvent(event_id_t event_id, Foundation::EventDataInterface* data);
 

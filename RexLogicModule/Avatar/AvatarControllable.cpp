@@ -60,7 +60,7 @@ namespace RexLogic
 
     AvatarControllable::AvatarControllable(RexLogicModule *rexlogic) : 
         framework_(rexlogic->GetFramework())
-      , connection_(rexlogic->GetLLStream())
+      , connection_(0)
       , event_manager_(rexlogic->GetFramework()->GetEventManager())
       , rexlogic_(rexlogic)
       , net_dirty_(false)

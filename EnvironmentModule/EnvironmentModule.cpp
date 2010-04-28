@@ -261,7 +261,8 @@ namespace Environment
         resource_event_category_(0),
         scene_event_category_(0),
         framework_event_category_(0),
-        input_event_category_(0)
+        input_event_category_(0),
+        currentWorldStream_(0)
     {
     }
 

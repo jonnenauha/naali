@@ -13,6 +13,8 @@
 
 #include "RexNetworkingModuleApi.h"
 
+#include <boost/function.hpp>
+
 #include <QObject>
 
 namespace RexNetworking
@@ -49,7 +51,8 @@ namespace RexNetworking
 
         public:
 
-            typedef std::tr1::function <void (LLInMessage*)> MessageHandler;
+            //typedef std::tr1::function <void (LLInMessage*)> MessageHandler;
+            typedef boost::function <void (LLInMessage*)> MessageHandler;
             typedef std::map <LLMsgID, MessageHandler> MessageHandlerMap;
 
             //=================================================================
